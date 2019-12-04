@@ -1,1 +1,1 @@
-ArcadableLib
+This library allows you to create your own local single/multi-player game console. Write the game data to an external ROM modules, then insert the ROM module, load the game data into the library and display the current game state on led strips. 
