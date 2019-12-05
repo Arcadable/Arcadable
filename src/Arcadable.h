@@ -27,10 +27,9 @@ class Game {
 		std::map<int, Calculation> calculations;
 		std::map<int, Condition> conditions;
 		std::multimap<int, Instruction> instructions;
-		std::map<int, int> gamestate;
+		std::multimap<int, Value> lists;
 		CRGB* pixels;
 		void setConfiguration(
-			InputPins *inputs,
 			SystemConfig *systemConfig,
 			CRGB* pixels
 		);
@@ -38,8 +37,7 @@ class Game {
 			std::vector<std::vector<int>> *untypedConditions,
 			std::vector<std::vector<int>> *untypedCalculations,
 			std::vector<std::vector<int>> *untypedValues,
-			std::vector<std::vector<int>> *untypedInstructions,
-			std::vector<int> *untypedGamestate
+			std::vector<std::vector<int>> *untypedInstructions
 		);
 		void step();
 

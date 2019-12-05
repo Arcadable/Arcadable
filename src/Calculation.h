@@ -12,8 +12,8 @@ class Calculation {
         * If ending == true, the loop of calculations is broken, calculationRight is ignored and calculationLeftID is assumed to be a valueID, which is then returned without performing any arithmetics.
         */
         bool ending;
-        unsigned short calculationLeftID;
-        unsigned short calculationRightID;
+       // unsigned short calculationLeftID;
+       // unsigned short calculationRightID;
         CalculationOperator calculationOperator;
     
         Calculation() {}
@@ -22,7 +22,13 @@ class Calculation {
             bool ending,
             unsigned short calculationLeftID,
             unsigned short calculationRightID,
-            CalculationOperator calculationOperator
+            CalculationOperator calculationOperator,
+            Game *game
         );
         int result(Game * game);
+
+    private
+        Calculation *_calculationLeft;
+        Calculation *_calculationRight;
+        Value *_endingValue;
 };

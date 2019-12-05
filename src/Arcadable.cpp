@@ -2,11 +2,9 @@
 #include "Arcadable.h"
 
 void Game::setConfiguration(
-	InputPins *inputs,
 	SystemConfig *systemConfig,
 	CRGB* pixels
 ) {
-	this->inputs = inputs;
 	this->systemConfig = systemConfig;
 	this->pixels = pixels;
 
@@ -23,8 +21,7 @@ void Game::setGameLogic(
 	std::vector<std::vector<int>> *untypedConditions,
 	std::vector<std::vector<int>> *untypedCalculations,
 	std::vector<std::vector<int>> *untypedValues,
-	std::vector<std::vector<int>> *untypedInstructions,
-	std::vector<int> * untypedGamestate
+	std::vector<std::vector<int>> *untypedInstructions
 ) {
 
 	for ( auto &condition : *untypedConditions ) {
@@ -54,9 +51,15 @@ void Game::setGameLogic(
 		Value typedValue(
 			value[0],
 			static_cast<ValueType>(value[1]),
-			value[2]
+			value[2],
+			value[3],
+			value[4]
 		);
 		values.insert(std::pair<int, Value>(value[0], typedValue));
+
+		if (typedValue.isPartOfList) {
+			lists.insert(std::pair<int, Value>(value[4], typedValue));
+		}
 	}
 	for ( auto &instruction : *untypedInstructions ) {
 		Instruction typedInstruction(
@@ -65,11 +68,6 @@ void Game::setGameLogic(
 			instruction[2]
 		);
 		instructions.insert(std::pair<int, Instruction>(instruction[0], typedInstruction));
-	}
-	int i = 0;
-	for ( auto &state : *untypedGamestate ) {
-		gamestate.insert(std::pair<int, int>(i, state));
-		i++;
 	}
 }
 void Game::step() {
@@ -83,7 +81,6 @@ void Game::step() {
 
 void Game::_doGameStep() {
 	inputs->fetchInputValues();
-
 
 	for (auto const& condition : conditions) {
 		if (condition.second.rootCondition == true) {

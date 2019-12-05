@@ -14,25 +14,25 @@ class Condition {
         */
         bool rootCondition;
     
-        unsigned short conditionCalculationLeftID;
-        unsigned short conditionCalculationRightID;
+       // unsigned short conditionCalculationLeftID;
+       // unsigned short conditionCalculationRightID;
         RelationalOperator conditionOperator; 
     
         /* 
         * If the condition validates to true, then the instructions with this ID will be executed
         */
-        unsigned short conditionSuccessInstructionsID;
-    
+       // unsigned short conditionSuccessInstructionsID;
+
         /*
         * If false, the conditionFailedInstructions will not be executed
         */
         bool hasFailedCondition;
     
         /* 
-        * If the condition validates to false, and hasFailedCondition == true, then the instructions with this ID will be executed
-        */
-        unsigned short conditionFailedInstructionsID;
-    
+        * If the condition validates to false, and hasFailedCondition == true, then these instructions with this ID will be executed
+        */    
+        //std::vector<Instruction> failedInstructions;
+
         Condition();
         Condition(
             unsigned short ID,
@@ -42,8 +42,15 @@ class Condition {
             RelationalOperator conditionOperator,
             unsigned short conditionSuccessInstructionsID,
             bool hasFailedCondition,
-            unsigned short conditionFailedInstructionsID
+            unsigned short conditionFailedInstructionsID,
+            Game *game
         );
         void execute(Game *game) const;
+    private
+        std::vector<Instruction *> _failedInstructions;
+        std::vector<Instruction *> _successInstructions;
+        Calculation *_conditionCalculationRight;
+        Calculation *_conditionCalculationLeft;
+
 };
 

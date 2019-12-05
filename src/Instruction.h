@@ -9,22 +9,27 @@ class Instruction {
     
     
         /* 
-        * If valueLeft.type != gamestatePointer and valueLeft.type != pixel, then valueLeft.value is the ID of another condition to execute
+        * If valueLeft.type is not a mutable valuetype, then valueLeft.value is the ID of another condition to execute
         */
-        unsigned short valueLeftID;
+        //unsigned short valueLeftID;
     
         /*
-        * Ignored when valueLeft.type != gamestatePointer and valueLeft.type != pixel.
-        * Otherwise, either the gamestate property, or pixel at index valueLeft.value will be changed to the value/result of calculationRight.
+        * Ignored when valueLeft.type is not a mutable valuetype.
+        * Otherwise, the mutable valuetype will be changed to the value/result of calculationRight.
         */
-        unsigned short calculationRightID;
+        //unsigned short calculationRight;
     
         Instruction();
         Instruction(
             unsigned short ID,
             unsigned short valueLeftID,
-            unsigned short calculationRightID
+            unsigned short calculationRightID,
+            Game *game
         );
         void execute(Game *game) const;
+    private:
+        Calculation *_calculationRight;
+        Value *_valueLeft;
+        Calculation *_pixelCalculation;
 };
 

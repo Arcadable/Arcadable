@@ -1,15 +1,20 @@
 #pragma once
 #define SystemConfig_h
+#include <vector>
 
 class SystemConfig {
     public:
-        int screenWidth;
-        int screenHeight;
+        unsigned int screenWidth;
+        unsigned int screenHeight;
         unsigned int minMillisPerFrame;
-        int expandedProperties[3];
+        unsigned int expandedProperties[3];
+        std::map<int, bool> inputValues;
         SystemConfig(
-            int screenWidth,
-            int screenHeight,
-            int minMillisPerFrame
+            unsigned int screenWidth,
+            unsigned int screenHeight,
+            unsigned int minMillisPerFrame//,
+           // std::vector<int>* inputPins
         );
+
+        void fetchInputValues();
 };

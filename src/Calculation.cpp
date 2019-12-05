@@ -5,22 +5,26 @@ Calculation::Calculation(
     bool ending,
     unsigned short calculationLeftID,
     unsigned short calculationRightID,
-    CalculationOperator calculationOperator
+    CalculationOperator calculationOperator,
+    Game *game
 ) {
     this->ID = ID;
     this->ending = ending;
-    this->calculationLeftID = calculationLeftID;
-    this->calculationRightID = calculationRightID;
+  //  this->calculationLeftID = calculationLeftID;
+  //  this->calculationRightID = calculationRightID;
     this->calculationOperator = calculationOperator;
+    _calculationLeft = game->calculations.find(calculationLeftID)->second;
+    _calculationRight = game->calculations.find(calculationRightID)->second;
+    _endingValue = game->values.find(calculationLeftID)->second;
 };
 
 int Calculation::result(Game *game) {
 
     if (ending) {
-        return game->values.find(calculationLeftID)->second.get(game);;
+        return _endingValue->get(game);
     }
-    int left = game->calculations.find(calculationLeftID)->second.result(game);
-    int right = game->calculations.find(calculationRightID)->second.result(game);
+    int left = _calculationLeft->result(game);
+    int right = _calculationRight->result(game);
 
     switch(calculationOperator) {
         case add:
