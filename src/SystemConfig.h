@@ -1,6 +1,6 @@
 #pragma once
 #define SystemConfig_h
-#include <vector>
+#include "ArcadableLib.h"
 
 class SystemConfig {
     public:
@@ -12,8 +12,8 @@ class SystemConfig {
         SystemConfig(
             unsigned int screenWidth,
             unsigned int screenHeight,
-            unsigned int minMillisPerFrame//,
-           // std::vector<int>* inputPins
+            unsigned int minMillisPerFrame,
+            std::vector<int> *inputPins
         );
 
         void fetchInputValues();

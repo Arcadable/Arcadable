@@ -11,8 +11,7 @@ Condition::Condition(
     RelationalOperator conditionOperator,
     unsigned short conditionSuccessInstructionsID,
     bool hasFailedCondition,
-    unsigned short conditionFailedInstructionsID,
-    Game *game
+    unsigned short conditionFailedInstructionsID
 ) {
     this->ID = ID;
     this->rootCondition = rootCondition;
@@ -20,25 +19,14 @@ Condition::Condition(
     this->conditionCalculationRightID = conditionCalculationRightID;
     this->conditionOperator = conditionOperator;
     this->hasFailedCondition = hasFailedCondition;
-
-    std::pair<std::multimap<int, Instruction>::iterator, std::multimap<int, Instruction>::iterator> instructions;
-
-    instructions = game->instructions.equal_range(conditionSuccessInstructionsID);
-    for (std::multimap<int, Instruction>::iterator it = instructions.first; it != instructions.second; it++) {
-        _successInstructions.push_back(&it->second);
-    }
-
-    instructions = game->instructions.equal_range(conditionFailedInstructionsID);
-    for (std::multimap<int, Instruction>::iterator it = instructions.first; it != instructions.second; it++) {
-        _failedInstructions.push_back(&it->second);
-    }
-    _conditionCalculationLeft = game->calculations.find(conditionCalculationLeftID)->second;
-    _conditionCalculationRight = game->calculations.find(conditionCalculationRightID)->second;
+    this->conditionSuccessInstructionsID = conditionSuccessInstructionsID;
+    this->conditionFailedInstructionsID = conditionFailedInstructionsID;
+    game = Game::getInstance();
 };
     
-void Condition::execute(Game *game) const {
-    int left = _conditionCalculationLeft->result(game);
-    int right = _conditionCalculationRight->result(game);
+void Condition::execute() {
+    int left = game->calculations.find(conditionCalculationLeftID)->second.result();
+    int right = game->calculations.find(conditionCalculationRightID)->second.result();
     bool validationResult = false;
 
     switch(conditionOperator) {
@@ -61,14 +49,15 @@ void Condition::execute(Game *game) const {
             validationResult = left <= right;
             break;
     }
-    std::vector<Instruction> instructions;
+    std::pair<std::multimap<int, Instruction>::iterator, std::multimap<int, Instruction>::iterator> instructions;
     if (validationResult) {
-        for ( Instruction *instruction : _successInstructions ) {
-            instruction->execute(game);
-        }
+        instructions = game->instructions.equal_range(conditionSuccessInstructionsID);
     } else if (hasFailedCondition) {
-        for ( Instruction *instruction : _failedInstructions ) {
-            instruction->execute(game);
-        }
+        instructions = game->instructions.equal_range(conditionFailedInstructionsID);
     }
+    for (std::multimap<int, Instruction>::iterator it = instructions.first; it != instructions.second; it++) {
+        it->second.execute();
+    }
+
+
 };

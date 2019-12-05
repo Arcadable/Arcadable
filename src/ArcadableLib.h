@@ -1,16 +1,14 @@
 /*
-	Arcadable.h - Library for running games on LED strips.
+	ArcadableLib.h - Library for running games on LED strips.
 	Created by Niek de Wit, January, 2020.
 	Released into the public domain.
 */
-#ifndef Arcadable_h
-#define Arcadable_h
+#ifndef ArcadableLib_h
+#define ArcadableLib_h
 
 #include "Arduino.h"
 #include <map>
 #include <vector>
-#include "InputPins.h"
-#include "SystemConfig.h"
 #define FASTLED_INTERNAL
 #include <FastLED.h>
 
@@ -18,10 +16,10 @@ class Value;
 class Calculation;
 class Condition;
 class Instruction;
+class SystemConfig;
 
 class Game {
 	public:
-		InputPins *inputs;
 		SystemConfig *systemConfig;
 		std::map<int, Value> values;
 		std::map<int, Calculation> calculations;
@@ -29,9 +27,10 @@ class Game {
 		std::multimap<int, Instruction> instructions;
 		std::multimap<int, Value> lists;
 		CRGB* pixels;
+		static Game *getInstance();
 		void setConfiguration(
 			SystemConfig *systemConfig,
-			CRGB* pixels
+			CRGB *pixels
 		);
 		void setGameLogic(
 			std::vector<std::vector<int>> *untypedConditions,
@@ -42,10 +41,12 @@ class Game {
 		void step();
 
 	private:
+		static Game *_instance;
 		unsigned int _prevMillis;
 		void _doGameStep();
-};
 
+};
+#include "SystemConfig.h"
 #include "Value.h"
 #include "Calculation.h"
 #include "Instruction.h"

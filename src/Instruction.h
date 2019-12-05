@@ -1,35 +1,30 @@
 #pragma once
 #define Instruction_h
-#include "Arcadable.h"
+#include "ArcadableLib.h"
 
 class Instruction {
 
     public:
         unsigned short ID;
-    
+        Game *game;
     
         /* 
         * If valueLeft.type is not a mutable valuetype, then valueLeft.value is the ID of another condition to execute
         */
-        //unsigned short valueLeftID;
+        unsigned short valueLeftID;
     
         /*
         * Ignored when valueLeft.type is not a mutable valuetype.
         * Otherwise, the mutable valuetype will be changed to the value/result of calculationRight.
         */
-        //unsigned short calculationRight;
+        unsigned short calculationRightID;
     
         Instruction();
         Instruction(
             unsigned short ID,
             unsigned short valueLeftID,
-            unsigned short calculationRightID,
-            Game *game
+            unsigned short calculationRightID
         );
-        void execute(Game *game) const;
-    private:
-        Calculation *_calculationRight;
-        Value *_valueLeft;
-        Calculation *_pixelCalculation;
+        void execute();
 };
 

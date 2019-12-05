@@ -5,7 +5,7 @@ SystemConfig::SystemConfig(
     unsigned int screenWidth,
     unsigned int screenHeight,
     unsigned int minMillisPerFrame,
-    std::vector<int>* inputPins
+    std::vector<int> *inputPins
 ) {
     this->screenWidth = screenWidth;
     this->screenHeight = screenHeight;
@@ -16,12 +16,12 @@ SystemConfig::SystemConfig(
 
     for ( auto &input : *inputPins ) {
       inputValues.insert(std::pair<int, bool>(input, false)); 
+      pinMode(input, INPUT);
     }
 };
 
 void SystemConfig::fetchInputValues() {
-	std::map<int, bool>::iterator it = inputValues.begin();
-	for (std::pair<int, bool> input : inputValues) {
-        inputValues[input.first] = digitalRead(input.first);
+  for (auto &input : inputValues) {
+    inputValues[input.first] = digitalRead(input.first);
 	}
-}
+};
