@@ -29,6 +29,13 @@ int Value::get() {
         }
         case pixelIndex: {
             int pixelIndex = game->calculations.find(value)->second.result();
+            if (game->systemConfig->layoutIsZigZag) {
+                int y = pixelIndex / game->systemConfig->screenHeight;
+                if (y & 0x01) {
+                    int yMul = y * game->systemConfig->screenWidth;
+                    pixelIndex = (game->systemConfig->screenWidth - 1) - (pixelIndex - yMul) + yMul;
+                }
+            }
             return game->pixels[pixelIndex].r + (game->pixels[pixelIndex].g << 8) + (game->pixels[pixelIndex].b << 16);
         }
         case inputPointer: {
@@ -61,7 +68,15 @@ void Value::set(int newValue) {
         case floatingPoint:
             value = newValue;
         case pixelIndex: {
-            game->pixels[game->calculations.find(value)->second.result()] = newValue;
+            int pixelIndex = game->calculations.find(value)->second.result();
+            if (game->systemConfig->layoutIsZigZag) {
+                int y = pixelIndex / game->systemConfig->screenHeight;
+                if (y & 0x01) {
+                    int yMul = y * game->systemConfig->screenWidth;
+                    pixelIndex = (game->systemConfig->screenWidth - 1) - (pixelIndex - yMul) + yMul;
+                }
+            }
+            game->pixels[pixelIndex] = newValue;
         }
         default:
             return;

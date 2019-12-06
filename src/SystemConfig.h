@@ -7,12 +7,14 @@ class SystemConfig {
         unsigned int screenWidth;
         unsigned int screenHeight;
         unsigned int minMillisPerFrame;
-        unsigned int expandedProperties[3];
+        bool layoutIsZigZag;
+        unsigned int expandedProperties[4];
         std::map<int, bool> inputValues;
         SystemConfig(
             unsigned int screenWidth,
             unsigned int screenHeight,
             unsigned int minMillisPerFrame,
+            bool layoutIsZigZag,
             std::vector<int> *inputPins
         );
 

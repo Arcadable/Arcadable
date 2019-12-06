@@ -76,23 +76,13 @@ void Game::setGameLogic(
 	}
 }
 void Game::step() {
-	for (unsigned int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
-		pixels[i] = CRGB(0 + (0 << 8) + (0 << 16));
-	}
+
 	int currentMillis = millis();
 	if (currentMillis - _prevMillis < systemConfig->minMillisPerFrame) {
 		delay(systemConfig->minMillisPerFrame - (millis() - _prevMillis));
 	}
 	_doGameStep();
 	_prevMillis = millis();
-	Serial.print(values.find(8)->second.get());
-		Serial.print("-");
-
-		Serial.print(values.find(9)->second.get());
-		Serial.print("-");
-
-		Serial.print(calculations.find(14)->second.result());
-	Serial.println();
 }
 
 void Game::_doGameStep() {
