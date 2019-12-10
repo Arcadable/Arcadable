@@ -8,7 +8,7 @@ class Condition {
 
     public:
         unsigned short ID;
-        Game *game;
+        Arcadable *game;
 
         /*
         * If false, this condition will only be executed once it is referenced by another condition.

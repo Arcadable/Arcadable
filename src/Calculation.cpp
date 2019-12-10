@@ -12,7 +12,7 @@ Calculation::Calculation(
     this->calculationOperator = calculationOperator;
     this->calculationLeftID = calculationLeftID;
     this->calculationRightID = calculationRightID;
-    game = Game::getInstance();
+    game = Arcadable::getInstance();
 };
 
 int Calculation::result() {

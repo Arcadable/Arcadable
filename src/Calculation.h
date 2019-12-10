@@ -7,7 +7,7 @@ class Calculation {
 
     public:
         unsigned short ID;
-        Game *game;
+        Arcadable *game;
         /*
         * To make nested calculations possible, a calculation references other calculations to perform arithmetics on.
         * If ending == true, the loop of calculations is broken, calculationRight is ignored and calculationLeftID is assumed to be a valueID, which is then returned without performing any arithmetics.

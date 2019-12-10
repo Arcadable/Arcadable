@@ -28,22 +28,22 @@ enum ValueType {
 class Value {
     public:
         unsigned short ID;
-        Game *game;
+        Arcadable *game;
         ValueType type;
-        signed int value;
+        unsigned int value;
         bool isPartOfList;
         unsigned short listID;
         Value();
         Value(
             unsigned short ID,
             ValueType type,
-            signed int value,
+            unsigned int value,
             bool isPartOfList,
             unsigned short listID
         );
         
-        int get();
-        void set(int newValue);
+        unsigned int get();
+        void set(unsigned int newValue);
     private:
         union floatingPointUnion {
             unsigned char buf[4];

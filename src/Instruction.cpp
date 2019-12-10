@@ -10,7 +10,7 @@ Instruction::Instruction(
     this->ID = ID;
     this->valueLeftID = valueLeftID;
     this->calculationRightID = calculationRightID;
-    game = Game::getInstance();
+    game = Arcadable::getInstance();
 };
 
 void Instruction::execute() {

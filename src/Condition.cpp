@@ -21,7 +21,7 @@ Condition::Condition(
     this->hasFailedCondition = hasFailedCondition;
     this->conditionSuccessInstructionsID = conditionSuccessInstructionsID;
     this->conditionFailedInstructionsID = conditionFailedInstructionsID;
-    game = Game::getInstance();
+    game = Arcadable::getInstance();
 };
     
 void Condition::execute() {

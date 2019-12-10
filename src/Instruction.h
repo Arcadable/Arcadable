@@ -6,7 +6,7 @@ class Instruction {
 
     public:
         unsigned short ID;
-        Game *game;
+        Arcadable *game;
     
         /* 
         * If valueLeft.type is not a mutable valuetype, then valueLeft.value is the ID of another condition to execute

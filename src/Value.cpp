@@ -4,7 +4,7 @@
 Value::Value(
     unsigned short ID,
     ValueType type,
-    signed int value,
+    unsigned int value,
     bool isPartOfList,
     unsigned short listID
 ) {
@@ -13,18 +13,18 @@ Value::Value(
     this->value = value;
     this->isPartOfList = isPartOfList;
     this->listID = listID;
-    game = Game::getInstance();
+    game = Arcadable::getInstance();
 };
 
-int Value::get() {
+unsigned int Value::get() {
     switch(type) {
         case integer:
             return value;
         case floatingPoint: {
-            _floatingPointUnion.buf[0] = static_cast<char>(value & 0x000000ff);
-            _floatingPointUnion.buf[1] = static_cast<char>(( value & 0x0000ff00 ) >> 8);
-            _floatingPointUnion.buf[2] = static_cast<char>(( value & 0x00ff0000 ) >> 16);
-            _floatingPointUnion.buf[3] = static_cast<char>(( value & 0xff000000 ) >> 24);
+            _floatingPointUnion.buf[0] = static_cast<unsigned char>(value & 0x000000ff);
+            _floatingPointUnion.buf[1] = static_cast<unsigned char>(( value & 0x0000ff00 ) >> 8);
+            _floatingPointUnion.buf[2] = static_cast<unsigned char>(( value & 0x00ff0000 ) >> 16);
+            _floatingPointUnion.buf[3] = static_cast<unsigned char>(( value & 0xff000000 ) >> 24);
             return _floatingPointUnion.number;
         }
         case pixelIndex: {
@@ -62,11 +62,12 @@ int Value::get() {
     };
 };
 
-void Value::set(int newValue) {
+void Value::set(unsigned int newValue) {
     switch(type) {
         case integer:
         case floatingPoint:
             value = newValue;
+            break;
         case pixelIndex: {
             int pixelIndex = game->calculations.find(value)->second.result();
             if (game->systemConfig->layoutIsZigZag) {
@@ -77,6 +78,7 @@ void Value::set(int newValue) {
                 }
             }
             game->pixels[pixelIndex] = newValue;
+            break;
         }
         default:
             return;
