@@ -18,6 +18,7 @@ Value::Value(
 
 unsigned int Value::get() {
     switch(type) {
+        case conditionPointer:
         case integer:
             return value;
         case floatingPoint: {
@@ -30,7 +31,7 @@ unsigned int Value::get() {
         case pixelIndex: {
             int pixelIndex = game->calculations.find(value)->second.result();
             if (game->systemConfig->layoutIsZigZag) {
-                int y = pixelIndex / game->systemConfig->screenHeight;
+                int y = pixelIndex / game->systemConfig->screenWidth;
                 if (y & 0x01) {
                     int yMul = y * game->systemConfig->screenWidth;
                     pixelIndex = (game->systemConfig->screenWidth - 1) - (pixelIndex - yMul) + yMul;
@@ -71,7 +72,7 @@ void Value::set(unsigned int newValue) {
         case pixelIndex: {
             int pixelIndex = game->calculations.find(value)->second.result();
             if (game->systemConfig->layoutIsZigZag) {
-                int y = pixelIndex / game->systemConfig->screenHeight;
+                int y = pixelIndex / game->systemConfig->screenWidth;
                 if (y & 0x01) {
                     int yMul = y * game->systemConfig->screenWidth;
                     pixelIndex = (game->systemConfig->screenWidth - 1) - (pixelIndex - yMul) + yMul;

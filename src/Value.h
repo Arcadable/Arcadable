@@ -22,7 +22,8 @@ enum ValueType {
     inputPointer,
     systemPointer,
     currentTime,
-    list
+    list,
+    conditionPointer
 };
 
 class Value {
