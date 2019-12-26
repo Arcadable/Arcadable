@@ -18,7 +18,6 @@ Value::Value(
 
 unsigned int Value::get() {
     switch(type) {
-        case conditionPointer:
         case integer:
             return value;
         case floatingPoint: {
@@ -79,8 +78,10 @@ void Value::set(unsigned int newValue) {
                 }
             }
             if (pixelIndex < game->systemConfig->screenWidth * game->systemConfig->screenHeight) {
+ Serial.print(newValue >> 16); Serial.print("; "); Serial.print(newValue >> 8 & 0x00ff); Serial.print("; "); Serial.println(newValue & 0x0000ff);
 
             game->pixels[pixelIndex] = newValue;
+            Serial.println(pixelIndex);
             }
            
             break;

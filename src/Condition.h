@@ -15,8 +15,10 @@ class Condition {
         */
         bool rootCondition;
     
-        unsigned short conditionCalculationLeftID;
-        unsigned short conditionCalculationRightID;
+        bool leftIsValue;
+        unsigned short leftID;
+        bool rightIsValue;
+        unsigned short rightID;
         RelationalOperator conditionOperator; 
     
         /* 
@@ -38,8 +40,10 @@ class Condition {
         Condition(
             unsigned short ID,
             bool rootCondition,
-            unsigned short conditionCalculationLeftID,
-            unsigned short conditionCalculationRightID,
+            bool leftIsValue,
+            unsigned short leftID,
+            bool rightIsValue,
+            unsigned short rightID,
             RelationalOperator conditionOperator,
             unsigned short conditionSuccessInstructionsID,
             bool hasFailedCondition,

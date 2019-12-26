@@ -69,11 +69,16 @@ void Arcadable::step() {
 
 void Arcadable::_doGameStep() {
 	systemConfig->fetchInputValues();
+	Serial.println("==============Step!================");
 
 	for (auto &condition : conditions) {
 		if (condition.second.rootCondition == true) {
 			condition.second.execute();
 		}
+	}
+	for (unsigned int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
+	//	Serial.print(this->pixels[i].r);	Serial.print(": ");
+
 	}
 
 
@@ -100,71 +105,102 @@ void Arcadable::_readAndLoadGameLogic() {
 	_readEEPROM(currentParsePosition, 2, valuesLengthData);
 	unsigned short int valuesLength = (valuesLengthData[0] << 8) + valuesLengthData[1];
 	currentParsePosition += 2;
-	unsigned char valuesData[valuesLength * 9];
-	_readEEPROM(currentParsePosition, valuesLength * 9, valuesData);
-	currentParsePosition += valuesLength * 9;
+	unsigned char valuesData[valuesLength];
+	_readEEPROM(currentParsePosition, valuesLength, valuesData);
+	currentParsePosition += valuesLength;
 
 
-	for (unsigned int i = 0 ; i < sizeof(valuesData)/sizeof(valuesData[0]) ; i += 9) {
+	for (unsigned int i = 0 ; i < sizeof(valuesData)/sizeof(valuesData[0]) ;) {
 		unsigned short id = static_cast<unsigned short>((valuesData[i + 0] << 8) + valuesData[i + 1]);
-		unsigned short listId = static_cast<unsigned short >((valuesData[i + 7] << 8) + valuesData[i + 8]);
+		unsigned int value = static_cast<unsigned int>((valuesData[i + 2] << 24) + (valuesData[i + 3] << 16) + (valuesData[i + 4] << 8) + valuesData[i + 5]);
+		ValueType type = static_cast<ValueType>(valuesData[i + 6] >> 1);
+		bool isPartOfList = static_cast<bool>(valuesData[i + 6] & 0b1);
+		unsigned short listId = isPartOfList ? static_cast<unsigned short >((valuesData[i + 7] << 8) + valuesData[i + 8]) : 0;
 		Value typedValue(
-			id, // ID
-			static_cast<ValueType>(valuesData[i + 6] >> 1), // Type
-			static_cast<unsigned int>((valuesData[i + 2] << 24) + (valuesData[i + 3] << 16) + (valuesData[i + 4] << 8) + valuesData[i + 5]), // Value
-			static_cast<bool>(valuesData[i + 6] & 0b1), // isPartOfList
-			listId // ListID
+			id,
+			type,
+			value,
+			isPartOfList,
+			listId
 		);
 		values.insert(std::pair<int, Value>(id, typedValue));
 
 		if (typedValue.isPartOfList) {
 			lists.insert(std::pair<int, Value>(listId, typedValue));
 		}
+
+		i += isPartOfList ? 9 : 7;
 	}
+
 
 	unsigned char calculationsLengthData[2];
 	_readEEPROM(currentParsePosition, 2, calculationsLengthData);
 	unsigned short int calculationsLength = (calculationsLengthData[0] << 8) + calculationsLengthData[1];
 	currentParsePosition += 2;
 
-	unsigned char calculationsData[calculationsLength * 7];
-	_readEEPROM(currentParsePosition, calculationsLength * 7, calculationsData);
-	currentParsePosition += calculationsLength * 7;
+	unsigned char calculationsData[calculationsLength];
+	_readEEPROM(currentParsePosition, calculationsLength, calculationsData);
+	currentParsePosition += calculationsLength;
 
-	for (unsigned int i = 0 ; i < sizeof(calculationsData)/sizeof(calculationsData[0]) ; i += 7) {
+	for (unsigned int i = 0 ; i < sizeof(calculationsData)/sizeof(calculationsData[0]) ;) {
 		unsigned short id = static_cast<unsigned short>((calculationsData[i + 0] << 8) + calculationsData[i + 1]);
+		unsigned short leftID = static_cast<unsigned short>((calculationsData[i + 2] << 8) + calculationsData[i + 3]);
+		unsigned short rightID = static_cast<unsigned short>((calculationsData[i + 4] << 8) + calculationsData[i + 5]);
+		CalculationOperator calculationOperator = static_cast<CalculationOperator>(calculationsData[i + 6] >> 3);
+		bool rightIsValue = static_cast<bool>((calculationsData[i + 6] >> 2) & 0b1);
+		bool leftIsValue = static_cast<bool>((calculationsData[i + 6] >> 1) & 0b1);
+		bool isStatic = static_cast<bool>(calculationsData[i + 6] & 0b1);
+
 		Calculation typedCalculation(
-			id, // ID
-			static_cast<bool>(calculationsData[i + 6] & 0b1), //ending
-			static_cast<unsigned short>((calculationsData[i + 2] << 8) + calculationsData[i + 3]), // calculationLeftID
-			static_cast<unsigned short>((calculationsData[i + 4] << 8) + calculationsData[i + 5]), // calculationRightID
-			static_cast<CalculationOperator>(calculationsData[i + 6] >> 1) // calculationOperator
+			id,
+			leftIsValue,
+			leftID,
+			rightIsValue,
+			rightID,
+			calculationOperator,
+			isStatic
 		);
 		calculations.insert(std::pair<int, Calculation>(id, typedCalculation)); 
+
+		i += 7;
 	}
-		
+
 	unsigned char conditionsLengthData[2];
 	_readEEPROM(currentParsePosition, 2, conditionsLengthData);
 	unsigned short int conditionsLength = (conditionsLengthData[0] << 8) + conditionsLengthData[1];
 	currentParsePosition += 2;
 
-	unsigned char conditonsData[conditionsLength * 11];
-	_readEEPROM(currentParsePosition, conditionsLength * 11, conditonsData);
-	currentParsePosition += conditionsLength * 11;
+	unsigned char conditonsData[conditionsLength];
+	_readEEPROM(currentParsePosition, conditionsLength, conditonsData);
+	currentParsePosition += conditionsLength;
 
-	for (unsigned int i = 0 ; i < sizeof(conditonsData)/sizeof(conditonsData[0]) ; i += 11) {
+	for (unsigned int i = 0 ; i < sizeof(conditonsData)/sizeof(conditonsData[0]) ;) {
 		unsigned short id = static_cast<unsigned short>((conditonsData[i + 0] << 8) + conditonsData[i + 1]);
+		RelationalOperator conditionOperator = static_cast<RelationalOperator>(conditonsData[i + 2] >> 4);
+		bool rootCondition = static_cast<bool>((conditonsData[i + 2] >> 3) & 0b1);
+		bool hasFailedCondition = static_cast<bool>((conditonsData[i + 2] >> 2) & 0b1);
+		bool leftIsValue = static_cast<bool>((conditonsData[i + 2] >> 1) & 0b1);
+		bool rightIsValue = static_cast<bool>(conditonsData[i + 2] & 0b1);
+		unsigned short leftID = static_cast<unsigned short>((conditonsData[i + 3] << 8) + conditonsData[i + 4]);
+		unsigned short rightID = static_cast<unsigned short>((conditonsData[i + 5] << 8) + conditonsData[i + 6]);
+		unsigned short conditionSuccessInstructionsID = static_cast<unsigned short>((conditonsData[i + 7] << 8) + conditonsData[i + 8]);
+		unsigned short conditionFailedInstructionsID = hasFailedCondition ? static_cast<unsigned short>((conditonsData[i + 9] << 8) + conditonsData[i + 10]) : 0;
+
 		Condition typedCondition(
-			id, // ID
-			static_cast<bool>((conditonsData[i + 2] >> 1) & 0b1), // rootCondition
-			static_cast<unsigned short>((conditonsData[i + 3] << 8) + conditonsData[i + 4]), // conditionCalculationLeftID
-			static_cast<unsigned short>((conditonsData[i + 5] << 8) + conditonsData[i + 6]), // conditionCalculationRightID
-			static_cast<RelationalOperator>(conditonsData[i + 2] >> 2), // conditionOperator
-			static_cast<unsigned short>((conditonsData[i + 7] << 8) + conditonsData[i + 8]), // conditionSuccesInstructionsID
-			static_cast<bool>(conditonsData[i + 2] & 0b1), // hasFailedCondition
-			static_cast<unsigned short>((conditonsData[i + 9] << 8) + conditonsData[i + 10]) // conditionFailedInstructionsID
+			id,
+			rootCondition,
+			leftIsValue,
+			leftID,
+			rightIsValue,
+			rightID,
+			conditionOperator,
+			conditionSuccessInstructionsID,
+			hasFailedCondition,
+			conditionFailedInstructionsID
 		);
 		conditions.insert(std::pair<int, Condition>(id, typedCondition));
+
+		i += hasFailedCondition ? 11 : 9;
 	}
 
 	unsigned char instructionsLengthData[2];
@@ -172,20 +208,28 @@ void Arcadable::_readAndLoadGameLogic() {
 	unsigned short int instructionsLength = (instructionsLengthData[0] << 8) + instructionsLengthData[1];
 	currentParsePosition += 2;
 
-	unsigned char instructionsData[instructionsLength * 6];
-	_readEEPROM(currentParsePosition, instructionsLength * 6, instructionsData);
-	currentParsePosition += instructionsLength * 6;
+	unsigned char instructionsData[instructionsLength];
+	_readEEPROM(currentParsePosition, instructionsLength, instructionsData);
+	currentParsePosition += instructionsLength;
 
-	for (unsigned int i = 0 ; i < sizeof(instructionsData)/sizeof(instructionsData[0]) ; i += 6) {
+	for (unsigned int i = 0 ; i < sizeof(instructionsData)/sizeof(instructionsData[0]) ;) {
 		unsigned short id = static_cast<unsigned short>((instructionsData[i + 0] << 8) + instructionsData[i + 1]);
+		unsigned short leftID = static_cast<unsigned short>((instructionsData[i + 2] << 8) + instructionsData[i + 3]);
+		unsigned short rightID = static_cast<unsigned short>((instructionsData[i + 4] << 8) + instructionsData[i + 5]);
+		InstructionType instructionType = static_cast<InstructionType>(instructionsData[i + 6] >> 1);
+		bool rightIsValue = static_cast<bool>(conditonsData[i + 6] & 0b1);
+
 		Instruction typedInstruction(
 			id,
-			static_cast<unsigned short>((instructionsData[i + 2] << 8) + instructionsData[i + 3]), // valueLeftID
-			static_cast<unsigned short>((instructionsData[i + 4] << 8) + instructionsData[i + 5]) // calculationRightID
+			leftID,
+			rightIsValue,
+			rightID,
+			instructionType
 		);
 		instructions.insert(std::pair<int, Instruction>(id, typedInstruction));
-	}
 
+		i += 7;
+	}
 	Serial.println("Done loading!");
 }
 

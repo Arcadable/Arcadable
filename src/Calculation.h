@@ -8,22 +8,24 @@ class Calculation {
     public:
         unsigned short ID;
         Arcadable *game;
-        /*
-        * To make nested calculations possible, a calculation references other calculations to perform arithmetics on.
-        * If ending == true, the loop of calculations is broken, calculationRight is ignored and calculationLeftID is assumed to be a valueID, which is then returned without performing any arithmetics.
-        */
-        bool ending;
-        unsigned short calculationLeftID;
-        unsigned short calculationRightID;
+        bool leftIsValue;
+        unsigned short leftID;
+        bool rightIsValue;
+        unsigned short rightID;
         CalculationOperator calculationOperator;
+        bool isStatic;
     
         Calculation() {}
         Calculation(
             unsigned short ID,
-            bool ending,
-            unsigned short calculationLeftID,
-            unsigned short calculationRightID,
-            CalculationOperator calculationOperator
+            bool leftIsValue,
+            unsigned short leftID,
+            bool rightIsValue,
+            unsigned short rightID,
+            CalculationOperator calculationOperator,
+            bool isStatic
         );
         int result();
+    private:
+        int _staticResult;
 };

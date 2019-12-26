@@ -2,49 +2,72 @@
 #include "Arduino.h"
 Calculation::Calculation(
     unsigned short ID,
-    bool ending,
-    unsigned short calculationLeftID,
-    unsigned short calculationRightID,
-    CalculationOperator calculationOperator
+    bool leftIsValue,
+    unsigned short leftID,
+    bool rightIsValue,
+    unsigned short rightID,
+    CalculationOperator calculationOperator,
+    bool isStatic
 ) {
     this->ID = ID;
-    this->ending = ending;
     this->calculationOperator = calculationOperator;
-    this->calculationLeftID = calculationLeftID;
-    this->calculationRightID = calculationRightID;
+    this->leftIsValue = leftIsValue;
+    this->leftID = leftID;
+    this->rightIsValue = rightIsValue;
+    this->rightID = rightID;
+    this->isStatic = isStatic;
+    this->_staticResult = -1;
     game = Arcadable::getInstance();
 };
 
 int Calculation::result() {
-    if (ending) {
-        return game->values.find(calculationLeftID)->second.get();
+
+    if (isStatic && _staticResult != -1) {
+        return _staticResult;
     }
-    int left = game->calculations.find(calculationLeftID)->second.result();
-    int right = game->calculations.find(calculationRightID)->second.result();
-    
+
+    int left = leftIsValue ? game->values.find(leftID)->second.get() : game->calculations.find(leftID)->second.result();
+    int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
+
+    int result = -1;
     switch(calculationOperator) {
         case add:
-            return left + right;
+            result = left + right;
+            break;
         case sub:
-            return left - right;
+            result =  left - right;
+            break;
         case mul:
-            return left * right;
+            result =  left * right;
+            break;
         case subdiv:
-            return left / right;
+            result =  left / right;
+            break;
         case mod:
-            return left % right;
+            result =  left % right;
+            break;
         case b_and:
-            return left & right;
+            result =  left & right;
+            break;
         case b_or:
-            return left | right;
+            result =  left | right;
+            break;
         case b_xor:
-            return left ^ right;
+            result =  left ^ right;
+            break;
         case lsh:
-            return left << right;
+            result =  left << right;
+            break;
         case rsh:
-            return left >> right;
+            result =  left >> right;
+            break;
         default:
-            return -1;
+            result =  -1;
+            break;
     };
+    if(isStatic) {
+        _staticResult = result;
+    }
+    return result;
     
 };

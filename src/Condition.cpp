@@ -6,8 +6,10 @@
 Condition::Condition(
     unsigned short ID,
     bool rootCondition,
-    unsigned short conditionCalculationLeftID,
-    unsigned short conditionCalculationRightID,
+    bool leftIsValue,
+    unsigned short leftID,
+    bool rightIsValue,
+    unsigned short rightID,
     RelationalOperator conditionOperator,
     unsigned short conditionSuccessInstructionsID,
     bool hasFailedCondition,
@@ -15,8 +17,10 @@ Condition::Condition(
 ) {
     this->ID = ID;
     this->rootCondition = rootCondition;
-    this->conditionCalculationLeftID = conditionCalculationLeftID;
-    this->conditionCalculationRightID = conditionCalculationRightID;
+    this->leftIsValue = leftIsValue;
+    this->leftID = leftID;
+    this->rightIsValue = rightIsValue;
+    this->rightID = rightID;
     this->conditionOperator = conditionOperator;
     this->hasFailedCondition = hasFailedCondition;
     this->conditionSuccessInstructionsID = conditionSuccessInstructionsID;
@@ -26,9 +30,9 @@ Condition::Condition(
     
 void Condition::execute() {
 
+    int left = leftIsValue ? game->values.find(leftID)->second.get() : game->calculations.find(leftID)->second.result();
+    int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
 
-    int left = game->calculations.find(conditionCalculationLeftID)->second.result();
-    int right = game->calculations.find(conditionCalculationRightID)->second.result();
     bool validationResult = false;
 
     switch(conditionOperator) {

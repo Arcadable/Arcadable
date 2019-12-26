@@ -4,20 +4,32 @@
 
 Instruction::Instruction(
     unsigned short ID,
-    unsigned short valueLeftID,
-    unsigned short calculationRightID
+    unsigned short leftID,
+    bool rightIsValue,
+    unsigned short rightID,
+    InstructionType instructionType
 ) {
     this->ID = ID;
-    this->valueLeftID = valueLeftID;
-    this->calculationRightID = calculationRightID;
+    this->leftID = leftID;
+    this->rightIsValue = rightIsValue;
+    this->rightID = rightID;
+    this->instructionType = instructionType;
     game = Arcadable::getInstance();
 };
 
 void Instruction::execute() {
-    Value *value = &game->values.find(valueLeftID)->second;
-    if (value->type == integer || value->type == floatingPoint || value->type == pixelIndex) {
-        value->set(game->calculations.find(calculationRightID)->second.result());
-    } else if (value->type == conditionPointer) {
-        game->conditions.find(value->value)->second.execute();
+    if (instructionType == MutateValue) {
+        Value *valueLeft = &game->values.find(leftID)->second;
+
+        if (
+            valueLeft->type == integer ||
+            valueLeft->type == floatingPoint ||
+            valueLeft->type == pixelIndex
+        ) {
+            int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
+            valueLeft->set(right);
+        }
+    } else {
+        game->conditions.find(leftID)->second.execute();
     }
 };
