@@ -25,6 +25,8 @@ Condition::Condition(
 };
     
 void Condition::execute() {
+
+
     int left = game->calculations.find(conditionCalculationLeftID)->second.result();
     int right = game->calculations.find(conditionCalculationRightID)->second.result();
     bool validationResult = false;
@@ -49,6 +51,7 @@ void Condition::execute() {
             validationResult = left <= right;
             break;
     }
+
     std::pair<std::multimap<int, Instruction>::iterator, std::multimap<int, Instruction>::iterator> instructions;
     if (validationResult) {
         instructions = game->instructions.equal_range(conditionSuccessInstructionsID);

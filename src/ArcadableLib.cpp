@@ -18,7 +18,7 @@ void Arcadable::setup(
 	this->pixels = pixels;
 
 	for (unsigned int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
-		pixels[i] = CRGB(0 + (0 << 8) + (0 << 16));
+		this->pixels[i] = CRGB(0 + (0 << 8) + (0 << 16));
 	}
 
 	Wire.begin();
@@ -26,7 +26,6 @@ void Arcadable::setup(
 }
 
 void Arcadable::step() {
-
 	int currentMillis = millis();
 	if(_pollImmediately || (currentMillis - _prevWireMillis > systemConfig->newGamePollingInterval)) {
 		if (_pollImmediately) {
@@ -70,12 +69,14 @@ void Arcadable::step() {
 
 void Arcadable::_doGameStep() {
 	systemConfig->fetchInputValues();
-	
+
 	for (auto &condition : conditions) {
 		if (condition.second.rootCondition == true) {
 			condition.second.execute();
 		}
 	}
+
+
 };
 
 void Arcadable::_unloadGameLogic() {

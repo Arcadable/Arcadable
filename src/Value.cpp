@@ -70,15 +70,19 @@ void Value::set(unsigned int newValue) {
             value = newValue;
             break;
         case pixelIndex: {
-            int pixelIndex = game->calculations.find(value)->second.result();
+            unsigned int pixelIndex = game->calculations.find(value)->second.result();
             if (game->systemConfig->layoutIsZigZag) {
-                int y = pixelIndex / game->systemConfig->screenWidth;
+                unsigned int y = pixelIndex / game->systemConfig->screenWidth;
                 if (y & 0x01) {
-                    int yMul = y * game->systemConfig->screenWidth;
+                    unsigned int yMul = y * game->systemConfig->screenWidth;
                     pixelIndex = (game->systemConfig->screenWidth - 1) - (pixelIndex - yMul) + yMul;
                 }
             }
+            if (pixelIndex < game->systemConfig->screenWidth * game->systemConfig->screenHeight) {
+
             game->pixels[pixelIndex] = newValue;
+            }
+           
             break;
         }
         default:

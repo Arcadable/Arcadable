@@ -17,7 +17,7 @@ void Instruction::execute() {
     Value *value = &game->values.find(valueLeftID)->second;
     if (value->type == integer || value->type == floatingPoint || value->type == pixelIndex) {
         value->set(game->calculations.find(calculationRightID)->second.result());
-    } else {
+    } else if (value->type == conditionPointer) {
         game->conditions.find(value->value)->second.execute();
     }
 };
