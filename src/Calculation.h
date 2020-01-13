@@ -25,7 +25,7 @@ class Calculation {
             CalculationOperator calculationOperator,
             bool isStatic
         );
-        int result();
+        unsigned int result();
     private:
-        int _staticResult;
+        unsigned int _staticResult;
 };

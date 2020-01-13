@@ -29,9 +29,8 @@ Condition::Condition(
 };
     
 void Condition::execute() {
-
-    int left = leftIsValue ? game->values.find(leftID)->second.get() : game->calculations.find(leftID)->second.result();
-    int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
+    unsigned int left = leftIsValue ? game->values.find(leftID)->second.get() : game->calculations.find(leftID)->second.result();
+    unsigned int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
 
     bool validationResult = false;
 
@@ -56,13 +55,14 @@ void Condition::execute() {
             break;
     }
 
-    std::pair<std::multimap<int, Instruction>::iterator, std::multimap<int, Instruction>::iterator> instructions;
+    std::pair<std::multimap<unsigned short int, Instruction>::iterator, std::multimap<unsigned short int, Instruction>::iterator> instructions;
     if (validationResult) {
         instructions = game->instructions.equal_range(conditionSuccessInstructionsID);
     } else if (hasFailedCondition) {
         instructions = game->instructions.equal_range(conditionFailedInstructionsID);
     }
-    for (std::multimap<int, Instruction>::iterator it = instructions.first; it != instructions.second; it++) {
+    
+    for (std::multimap<unsigned short int, Instruction>::iterator it = instructions.first; it != instructions.second; it++) {
         it->second.execute();
     }
 

@@ -20,26 +20,25 @@ unsigned int Value::get() {
     switch(type) {
         case integer:
             return value;
-        case floatingPoint: {
-            _floatingPointUnion.buf[0] = static_cast<unsigned char>(value & 0x000000ff);
-            _floatingPointUnion.buf[1] = static_cast<unsigned char>(( value & 0x0000ff00 ) >> 8);
-            _floatingPointUnion.buf[2] = static_cast<unsigned char>(( value & 0x00ff0000 ) >> 16);
-            _floatingPointUnion.buf[3] = static_cast<unsigned char>(( value & 0xff000000 ) >> 24);
-            return _floatingPointUnion.number;
-        }
         case pixelIndex: {
-            int pixelIndex = game->calculations.find(value)->second.result();
+            unsigned int  pixelIndex = game->calculations.find(value)->second.result();
             if (game->systemConfig->layoutIsZigZag) {
-                int y = pixelIndex / game->systemConfig->screenWidth;
+                unsigned int  y = pixelIndex / game->systemConfig->screenWidth;
                 if (y & 0x01) {
-                    int yMul = y * game->systemConfig->screenWidth;
+                    unsigned int  yMul = y * game->systemConfig->screenWidth;
                     pixelIndex = (game->systemConfig->screenWidth - 1) - (pixelIndex - yMul) + yMul;
                 }
             }
             return game->pixels[pixelIndex].r + (game->pixels[pixelIndex].g << 8) + (game->pixels[pixelIndex].b << 16);
         }
-        case inputPointer: {
-            std::map<int, bool>::iterator it = game->systemConfig->inputValues.begin();
+        case digitalInputPointer: {
+            
+            std::map<unsigned char, bool>::iterator it = game->systemConfig->digitalInputValues.begin();
+            std::advance( it, value );
+            return it->second;
+        }
+        case analogInputPointer: {
+            std::map<unsigned char, unsigned short int>::iterator it = game->systemConfig->analogInputValues.begin();
             std::advance( it, value );
             return it->second;
         }
@@ -48,13 +47,13 @@ unsigned int Value::get() {
         case currentTime:
             return millis();
         case list: {
-            int result = game->calculations.find(value)->second.result();
-            int listID = (( result & 0xff000000 ) >> 16) + (( result & 0x00ff0000 ) >> 16);
-            int listIndex = ( result & 0x0000ff00 ) + ( result & 0x000000ff );
-            std::pair<std::multimap<int, Value>::iterator, std::multimap<int, Value>::iterator> values;
+            unsigned short int listID = ( value & 0xffff0000 ) >> 16;
+            unsigned short int listPosCalcID = value & 0x0000ffff;
+            unsigned int listPos = game->calculations.find(listPosCalcID)->second.result();
+            std::pair<std::multimap<unsigned short int, Value>::iterator, std::multimap<unsigned short int, Value>::iterator> values;
             values = game->lists.equal_range(listID);
-            std::multimap<int, Value>::iterator it = values.first;
-            std::advance( it, listIndex );
+            std::multimap<unsigned short int, Value>::iterator it = values.first;
+            std::advance( it, listPos );
             return it->second.get();
         }
         default:
@@ -65,7 +64,6 @@ unsigned int Value::get() {
 void Value::set(unsigned int newValue) {
     switch(type) {
         case integer:
-        case floatingPoint:
             value = newValue;
             break;
         case pixelIndex: {
@@ -77,13 +75,24 @@ void Value::set(unsigned int newValue) {
                     pixelIndex = (game->systemConfig->screenWidth - 1) - (pixelIndex - yMul) + yMul;
                 }
             }
-            if (pixelIndex < game->systemConfig->screenWidth * game->systemConfig->screenHeight) {
- Serial.print(newValue >> 16); Serial.print("; "); Serial.print(newValue >> 8 & 0x00ff); Serial.print("; "); Serial.println(newValue & 0x0000ff);
-
-            game->pixels[pixelIndex] = newValue;
-            Serial.println(pixelIndex);
+            if (pixelIndex > 0 && pixelIndex < game->systemConfig->screenWidth * game->systemConfig->screenHeight) {
+                game->pixels[pixelIndex] = newValue;
             }
-           
+            break;
+        }
+        case list: {
+            unsigned short int listID = ( value & 0xffff0000 ) >> 16;
+            unsigned short int listPosCalcID = value & 0x0000ffff;
+            unsigned int listPos = game->calculations.find(listPosCalcID)->second.result();
+            std::pair<std::multimap<unsigned short int, Value>::iterator, std::multimap<unsigned short int, Value>::iterator> values;
+            values = game->lists.equal_range(listID);
+            std::multimap<unsigned short int, Value>::iterator it = values.first;
+            std::advance( it, listPos );
+            Value *listValue = &it->second;
+
+            if (listValue->type == integer || listValue->type == pixelIndex) {
+                listValue->set(newValue);
+            }
             break;
         }
         default:

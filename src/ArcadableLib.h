@@ -23,11 +23,11 @@ class Arcadable {
 	public:
 		SystemConfig *systemConfig;
 
-		std::map<int, Value> values;
-		std::map<int, Calculation> calculations;
-		std::map<int, Condition> conditions;
-		std::multimap<int, Instruction> instructions;
-		std::multimap<int, Value> lists;
+		std::map<unsigned short int, Value> values;
+		std::map<unsigned short int, Calculation> calculations;
+		std::map<unsigned short int, Condition> conditions;
+		std::multimap<unsigned short int, Instruction> instructions;
+		std::multimap<unsigned short int, Value> lists;
 		CRGB* pixels;
 		static Arcadable *getInstance();
 		void setup(

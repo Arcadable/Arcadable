@@ -23,10 +23,10 @@ void Instruction::execute() {
 
         if (
             valueLeft->type == integer ||
-            valueLeft->type == floatingPoint ||
-            valueLeft->type == pixelIndex
+            valueLeft->type == pixelIndex ||
+            valueLeft->type == list
         ) {
-            int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
+            unsigned int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
             valueLeft->set(right);
         }
     } else {

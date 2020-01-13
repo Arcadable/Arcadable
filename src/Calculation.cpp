@@ -16,20 +16,20 @@ Calculation::Calculation(
     this->rightIsValue = rightIsValue;
     this->rightID = rightID;
     this->isStatic = isStatic;
-    this->_staticResult = -1;
+    this->_staticResult = (unsigned int)(-1);
     game = Arcadable::getInstance();
 };
 
-int Calculation::result() {
+unsigned int Calculation::result() {
 
-    if (isStatic && _staticResult != -1) {
+    if (isStatic && _staticResult != (unsigned int)(-1)) {
         return _staticResult;
     }
 
-    int left = leftIsValue ? game->values.find(leftID)->second.get() : game->calculations.find(leftID)->second.result();
-    int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
+    unsigned int left = leftIsValue ? game->values.find(leftID)->second.get() : game->calculations.find(leftID)->second.result();
+    unsigned int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
 
-    int result = -1;
+    unsigned int result = -1;
     switch(calculationOperator) {
         case add:
             result = left + right;

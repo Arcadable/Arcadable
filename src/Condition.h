@@ -9,31 +9,14 @@ class Condition {
     public:
         unsigned short ID;
         Arcadable *game;
-
-        /*
-        * If false, this condition will only be executed once it is referenced by another condition.
-        */
         bool rootCondition;
-    
         bool leftIsValue;
         unsigned short leftID;
         bool rightIsValue;
         unsigned short rightID;
         RelationalOperator conditionOperator; 
-    
-        /* 
-        * If the condition validates to true, then the instructions with this ID will be executed
-        */
         unsigned short conditionSuccessInstructionsID;
-
-        /*
-        * If false, the conditionFailedInstructions will not be executed
-        */
-        bool hasFailedCondition;
-    
-        /* 
-        * If the condition validates to false, and hasFailedCondition == true, then these instructions with this ID will be executed
-        */    
+        bool hasFailedCondition;  
         unsigned short conditionFailedInstructionsID;
 
         Condition();

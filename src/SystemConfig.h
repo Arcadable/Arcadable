@@ -4,26 +4,42 @@
 
 class SystemConfig {
     public:
-        unsigned int screenWidth;
-        unsigned int screenHeight;
-        unsigned int minMillisPerFrame;
+        unsigned short int screenWidth;
+        unsigned short int screenHeight;
+        unsigned short int minMillisPerFrame;
         bool layoutIsZigZag;
         unsigned int wireClock;
-        unsigned int newGamePollingInterval;
+        unsigned short int newGamePollingInterval;
         unsigned char eepromAddress;
-        unsigned int eepromReadWriteBufferSize;
-        unsigned int expandedProperties[8];
-        std::map<int, bool> inputValues;
+        unsigned char eepromReadWriteBufferSize;
+        unsigned char regDataWidth;
+        unsigned char regShiftLoadPin;
+        unsigned char regClockInihibitPin;
+        unsigned char regSerialOutputPin;
+        unsigned char regClockInputPin;
+        unsigned char numAnalogInputs;
+        unsigned short int analogInputPin;
+        std::vector<unsigned char> *analogSignalPins;
+        unsigned int expandedProperties[4];
+        std::map<unsigned char, bool> digitalInputValues;
+        std::map<unsigned char, unsigned short int> analogInputValues;
         SystemConfig(
-            unsigned int screenWidth,
-            unsigned int screenHeight,
-            unsigned int minMillisPerFrame,
+            unsigned short int screenWidth,
+            unsigned short int screenHeight,
+            unsigned short int minMillisPerFrame,
             bool layoutIsZigZag,
             unsigned int wireClock,
-            unsigned int newGamePollingInterval,
+            unsigned short int newGamePollingInterval,
             unsigned char eepromAddress,
-            unsigned int eepromReadWriteBufferSize,
-            std::vector<int> *inputPins
+            unsigned char eepromReadWriteBufferSize,
+            unsigned char regDataWidth,
+            unsigned char regShiftLoadPin,
+            unsigned char regClockInihibitPin,
+            unsigned char regSerialOutputPin,
+            unsigned char regClockInputPin,
+            unsigned char numAnalogInputs,
+            unsigned short int analogInputPin,
+            std::vector<unsigned char> *analogSignalPins
         );
 
         void fetchInputValues();

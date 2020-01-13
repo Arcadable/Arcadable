@@ -2,15 +2,22 @@
 #include "Arduino.h"
 
 SystemConfig::SystemConfig(
-    unsigned int screenWidth,
-    unsigned int screenHeight,
-    unsigned int minMillisPerFrame,
+    unsigned short int screenWidth,
+    unsigned short int screenHeight,
+    unsigned short int minMillisPerFrame,
     bool layoutIsZigZag,
     unsigned int wireClock,
-    unsigned int newGamePollingInterval,
+    unsigned short int newGamePollingInterval,
     unsigned char eepromAddress,
-    unsigned int eepromReadWriteBufferSize,
-    std::vector<int> *inputPins
+    unsigned char eepromReadWriteBufferSize,
+    unsigned char regDataWidth,
+    unsigned char regShiftLoadPin,
+    unsigned char regClockInihibitPin,
+    unsigned char regSerialOutputPin,
+    unsigned char regClockInputPin,
+    unsigned char numAnalogInputs,
+    unsigned short int analogInputPin,
+    std::vector<unsigned char> *analogSignalPins
 ) {
     this->screenWidth = screenWidth;
     this->screenHeight = screenHeight;
@@ -20,23 +27,60 @@ SystemConfig::SystemConfig(
     this->newGamePollingInterval = newGamePollingInterval;
     this->eepromAddress = eepromAddress;
     this->eepromReadWriteBufferSize = eepromReadWriteBufferSize;
+    this->regDataWidth = regDataWidth;
+    this->regShiftLoadPin = regShiftLoadPin;
+    this->regClockInihibitPin = regClockInihibitPin;
+    this->regSerialOutputPin = regSerialOutputPin;
+    this->regClockInputPin = regClockInputPin;
+    this->numAnalogInputs = numAnalogInputs;
+    this->analogSignalPins = analogSignalPins;
+    this->analogInputPin = analogInputPin;
+
     expandedProperties[0] = screenWidth;
     expandedProperties[1] = screenHeight;
     expandedProperties[2] = minMillisPerFrame;
     expandedProperties[3] = layoutIsZigZag;
-    expandedProperties[4] = wireClock;
-    expandedProperties[5] = newGamePollingInterval;
-    expandedProperties[6] = eepromAddress;
-    expandedProperties[7] = eepromReadWriteBufferSize;
 
-    for ( auto &input : *inputPins ) {
-      inputValues.insert(std::pair<int, bool>(input, false)); 
-      pinMode(input, INPUT);
+
+    pinMode(this->regShiftLoadPin, OUTPUT);
+    pinMode(this->regClockInihibitPin, OUTPUT);
+    pinMode(this->regClockInputPin, OUTPUT);
+    pinMode(this->regSerialOutputPin, INPUT);
+
+    digitalWrite(this->regClockInputPin, LOW);
+    digitalWrite(this->regShiftLoadPin, HIGH);
+    for(unsigned char i = 0; i < this->regDataWidth ; i++) {
+      digitalInputValues.insert(std::pair<unsigned char, bool>(i, false)); 
+    }
+    for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
+      analogInputValues.insert(std::pair<unsigned char, unsigned short int>(i, 512)); 
+    }
+
+    for ( auto &pin : *this->analogSignalPins ) {
+      pinMode(pin, OUTPUT);
     }
 };
 
 void SystemConfig::fetchInputValues() {
-  for (auto &input : inputValues) {
-    inputValues[input.first] = digitalRead(input.first);
-	}
+  digitalWrite(this->regClockInihibitPin, HIGH);
+  digitalWrite(this->regShiftLoadPin, LOW);
+  delayMicroseconds(5);
+  digitalWrite(this->regShiftLoadPin, HIGH);
+  digitalWrite(this->regClockInihibitPin, LOW);
+
+  for(unsigned char i = 0; i < this->regDataWidth ; i++) {
+    digitalInputValues[i] = digitalRead(this->regSerialOutputPin);
+    digitalWrite(this->regClockInputPin, HIGH);
+    delayMicroseconds(5);
+    digitalWrite(this->regClockInputPin, LOW);
+  }
+  for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
+    unsigned char index = 0;
+    for ( auto &pin : *this->analogSignalPins ) {
+      digitalWrite(pin, (i >> index) & 0b1);
+      index++;
+    }
+    analogInputValues[i] = analogRead(this->analogInputPin);
+  }
+
 };

@@ -17,7 +17,7 @@ void Arcadable::setup(
 	this->systemConfig = systemConfig;
 	this->pixels = pixels;
 
-	for (unsigned int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
+	for (unsigned short int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
 		this->pixels[i] = CRGB(0 + (0 << 8) + (0 << 16));
 	}
 
@@ -26,12 +26,11 @@ void Arcadable::setup(
 }
 
 void Arcadable::step() {
-	int currentMillis = millis();
+	unsigned int currentMillis = millis();
 	if(_pollImmediately || (currentMillis - _prevWireMillis > systemConfig->newGamePollingInterval)) {
 		if (_pollImmediately) {
 			_pollImmediately = false;
 		}
-		Serial.println("Check for game..");
 		Wire.beginTransmission(systemConfig->eepromAddress);
 		Wire.write(0);
 		Wire.write(0);
@@ -69,23 +68,17 @@ void Arcadable::step() {
 
 void Arcadable::_doGameStep() {
 	systemConfig->fetchInputValues();
-	Serial.println("==============Step!================");
-
+	Serial.print("Step "); Serial.println(millis());
 	for (auto &condition : conditions) {
 		if (condition.second.rootCondition == true) {
 			condition.second.execute();
 		}
 	}
-	for (unsigned int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
-	//	Serial.print(this->pixels[i].r);	Serial.print(": ");
-
-	}
-
 
 };
 
 void Arcadable::_unloadGameLogic() {
-	for (unsigned int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
+	for (unsigned short int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
 		pixels[i] = CRGB(0 + (0 << 8) + (0 << 16));
 	}
 
@@ -116,6 +109,7 @@ void Arcadable::_readAndLoadGameLogic() {
 		ValueType type = static_cast<ValueType>(valuesData[i + 6] >> 1);
 		bool isPartOfList = static_cast<bool>(valuesData[i + 6] & 0b1);
 		unsigned short listId = isPartOfList ? static_cast<unsigned short >((valuesData[i + 7] << 8) + valuesData[i + 8]) : 0;
+		
 		Value typedValue(
 			id,
 			type,
@@ -123,10 +117,10 @@ void Arcadable::_readAndLoadGameLogic() {
 			isPartOfList,
 			listId
 		);
-		values.insert(std::pair<int, Value>(id, typedValue));
+		values.insert(std::pair<unsigned short int, Value>(id, typedValue));
 
 		if (typedValue.isPartOfList) {
-			lists.insert(std::pair<int, Value>(listId, typedValue));
+			lists.insert(std::pair<unsigned short int, Value>(listId, typedValue));
 		}
 
 		i += isPartOfList ? 9 : 7;
@@ -160,7 +154,7 @@ void Arcadable::_readAndLoadGameLogic() {
 			calculationOperator,
 			isStatic
 		);
-		calculations.insert(std::pair<int, Calculation>(id, typedCalculation)); 
+		calculations.insert(std::pair<unsigned short int, Calculation>(id, typedCalculation)); 
 
 		i += 7;
 	}
@@ -198,7 +192,7 @@ void Arcadable::_readAndLoadGameLogic() {
 			hasFailedCondition,
 			conditionFailedInstructionsID
 		);
-		conditions.insert(std::pair<int, Condition>(id, typedCondition));
+		conditions.insert(std::pair<unsigned short int, Condition>(id, typedCondition));
 
 		i += hasFailedCondition ? 11 : 9;
 	}
@@ -217,7 +211,7 @@ void Arcadable::_readAndLoadGameLogic() {
 		unsigned short leftID = static_cast<unsigned short>((instructionsData[i + 2] << 8) + instructionsData[i + 3]);
 		unsigned short rightID = static_cast<unsigned short>((instructionsData[i + 4] << 8) + instructionsData[i + 5]);
 		InstructionType instructionType = static_cast<InstructionType>(instructionsData[i + 6] >> 1);
-		bool rightIsValue = static_cast<bool>(conditonsData[i + 6] & 0b1);
+		bool rightIsValue = static_cast<bool>(instructionsData[i + 6] & 0b1);
 
 		Instruction typedInstruction(
 			id,
@@ -226,7 +220,7 @@ void Arcadable::_readAndLoadGameLogic() {
 			rightID,
 			instructionType
 		);
-		instructions.insert(std::pair<int, Instruction>(id, typedInstruction));
+		instructions.insert(std::pair<unsigned short int, Instruction>(id, typedInstruction));
 
 		i += 7;
 	}
@@ -259,6 +253,6 @@ void Arcadable::_readEEPROM(unsigned int startAddress, unsigned int dataLength, 
     }
     currentAddress += systemConfig->eepromReadWriteBufferSize; 
     currentReadIndex += systemConfig->eepromReadWriteBufferSize;
-	delay(1);
+		delay(1);
   };
 }
