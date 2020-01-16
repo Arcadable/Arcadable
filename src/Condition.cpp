@@ -33,7 +33,6 @@ void Condition::execute() {
     unsigned int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
 
     bool validationResult = false;
-
     switch(conditionOperator) {
         case eq:
             validationResult = left == right;

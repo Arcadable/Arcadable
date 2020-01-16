@@ -10,7 +10,8 @@ enum ValueType {
     analogInputPointer,
     systemPointer,
     currentTime,
-    list
+    list,
+    text
 };
 
 class Value {

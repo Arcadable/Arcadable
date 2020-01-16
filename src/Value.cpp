@@ -19,17 +19,16 @@ Value::Value(
 unsigned int Value::get() {
     switch(type) {
         case integer:
+        case text:
             return value;
         case pixelIndex: {
-            unsigned int  pixelIndex = game->calculations.find(value)->second.result();
-            if (game->systemConfig->layoutIsZigZag) {
-                unsigned int  y = pixelIndex / game->systemConfig->screenWidth;
-                if (y & 0x01) {
-                    unsigned int  yMul = y * game->systemConfig->screenWidth;
-                    pixelIndex = (game->systemConfig->screenWidth - 1) - (pixelIndex - yMul) + yMul;
-                }
-            }
-            return game->pixels[pixelIndex].r + (game->pixels[pixelIndex].g << 8) + (game->pixels[pixelIndex].b << 16);
+            unsigned short int xCalc = ( value & 0xffff0000 ) >> 16;
+            unsigned short int yCalc = value & 0x0000ffff;
+            unsigned int pixelIndex =
+                game->calculations.find(yCalc)->second.result() *
+                game->systemConfig->screenWidth +
+                game->calculations.find(xCalc)->second.result();
+            return  (game->pixels[pixelIndex].r << 16) + (game->pixels[pixelIndex].g << 8) + game->pixels[pixelIndex].b;
         }
         case digitalInputPointer: {
             
@@ -64,17 +63,16 @@ unsigned int Value::get() {
 void Value::set(unsigned int newValue) {
     switch(type) {
         case integer:
+        case text:
             value = newValue;
             break;
         case pixelIndex: {
-            unsigned int pixelIndex = game->calculations.find(value)->second.result();
-            if (game->systemConfig->layoutIsZigZag) {
-                unsigned int y = pixelIndex / game->systemConfig->screenWidth;
-                if (y & 0x01) {
-                    unsigned int yMul = y * game->systemConfig->screenWidth;
-                    pixelIndex = (game->systemConfig->screenWidth - 1) - (pixelIndex - yMul) + yMul;
-                }
-            }
+            unsigned short int xCalc = ( value & 0xffff0000 ) >> 16;
+            unsigned short int yCalc = value & 0x0000ffff;
+            unsigned int pixelIndex =
+                game->calculations.find(yCalc)->second.result() *
+                game->systemConfig->screenWidth +
+                game->calculations.find(xCalc)->second.result();
             if (pixelIndex > 0 && pixelIndex < game->systemConfig->screenWidth * game->systemConfig->screenHeight) {
                 game->pixels[pixelIndex] = newValue;
             }

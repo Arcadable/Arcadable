@@ -18,6 +18,7 @@ class Calculation;
 class Condition;
 class Instruction;
 class SystemConfig;
+class GFXcanvas;
 
 class Arcadable {
 	public:
@@ -28,11 +29,15 @@ class Arcadable {
 		std::map<unsigned short int, Condition> conditions;
 		std::multimap<unsigned short int, Instruction> instructions;
 		std::multimap<unsigned short int, Value> lists;
+		std::vector<Condition> rootConditions;
 		CRGB* pixels;
+		GFXcanvas* canvas;
+
 		static Arcadable *getInstance();
 		void setup(
 			SystemConfig *systemConfig,
-			CRGB *pixels
+			CRGB *pixels,
+			GFXcanvas* canvas
 		);
 
 		void step();
@@ -59,6 +64,6 @@ class Arcadable {
 #include "Calculation.h"
 #include "Instruction.h"
 #include "Condition.h"
-
+#include <FastLED_GFX.h>
 
 #endif

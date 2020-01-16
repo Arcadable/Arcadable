@@ -12,15 +12,16 @@ Arcadable *Arcadable::getInstance() {
 
 void Arcadable::setup(
 	SystemConfig *systemConfig,
-	CRGB *pixels
+	CRGB *pixels,
+	GFXcanvas* canvas
 ) {
 	this->systemConfig = systemConfig;
 	this->pixels = pixels;
-
+	this->canvas = canvas;
+;
 	for (unsigned short int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
 		this->pixels[i] = CRGB(0 + (0 << 8) + (0 << 16));
 	}
-
 	Wire.begin();
  	Wire.setClock(systemConfig->wireClock);
 }
@@ -67,14 +68,28 @@ void Arcadable::step() {
 }
 
 void Arcadable::_doGameStep() {
+
 	systemConfig->fetchInputValues();
 	Serial.print("Step "); Serial.println(millis());
-	for (auto &condition : conditions) {
-		if (condition.second.rootCondition == true) {
-			condition.second.execute();
-		}
+
+	for ( auto &condition : rootConditions ) {
+		condition.execute();
 	}
 
+
+	if(systemConfig->layoutIsZigZag) {
+		for(unsigned short int column = 0; column < systemConfig->screenWidth; column++) {
+			if (column % 2 == 1) {
+				CRGB tempLeds[systemConfig->screenHeight];
+				for (int row = 0; row < systemConfig->screenHeight; row++) {
+					tempLeds[(systemConfig->screenHeight - 1) - row] = pixels[column * systemConfig->screenWidth + row];  
+				}
+				for (int row = 0; row < systemConfig->screenHeight; row++) {
+					pixels[column * systemConfig->screenWidth + row] = tempLeds[row];  
+				}
+			}
+		}
+	}
 };
 
 void Arcadable::_unloadGameLogic() {
@@ -192,6 +207,9 @@ void Arcadable::_readAndLoadGameLogic() {
 			hasFailedCondition,
 			conditionFailedInstructionsID
 		);
+		if (rootCondition) {
+			rootConditions.push_back(typedCondition);
+		}
 		conditions.insert(std::pair<unsigned short int, Condition>(id, typedCondition));
 
 		i += hasFailedCondition ? 11 : 9;
@@ -208,11 +226,10 @@ void Arcadable::_readAndLoadGameLogic() {
 
 	for (unsigned int i = 0 ; i < sizeof(instructionsData)/sizeof(instructionsData[0]) ;) {
 		unsigned short id = static_cast<unsigned short>((instructionsData[i + 0] << 8) + instructionsData[i + 1]);
-		unsigned short leftID = static_cast<unsigned short>((instructionsData[i + 2] << 8) + instructionsData[i + 3]);
-		unsigned short rightID = static_cast<unsigned short>((instructionsData[i + 4] << 8) + instructionsData[i + 5]);
-		InstructionType instructionType = static_cast<InstructionType>(instructionsData[i + 6] >> 1);
-		bool rightIsValue = static_cast<bool>(instructionsData[i + 6] & 0b1);
-
+		unsigned int leftID = static_cast<unsigned int>((instructionsData[i + 2] << 24) + (instructionsData[i + 3] << 16) + (instructionsData[i + 4] << 8) + instructionsData[i + 5]);
+		unsigned int rightID = static_cast<unsigned int>((instructionsData[i + 6] << 24) + (instructionsData[i + 7] << 16) + (instructionsData[i + 8] << 8) + instructionsData[i + 9]);
+		InstructionType instructionType = static_cast<InstructionType>(instructionsData[i + 10] >> 1);
+		bool rightIsValue = static_cast<bool>(instructionsData[i + 10] & 0b1);
 		Instruction typedInstruction(
 			id,
 			leftID,
@@ -221,8 +238,7 @@ void Arcadable::_readAndLoadGameLogic() {
 			instructionType
 		);
 		instructions.insert(std::pair<unsigned short int, Instruction>(id, typedInstruction));
-
-		i += 7;
+		i += 11;
 	}
 	Serial.println("Done loading!");
 }
