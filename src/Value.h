@@ -19,18 +19,18 @@ class Value {
         unsigned short ID;
         Arcadable *game;
         ValueType type;
-        unsigned int value;
+        int value;
         bool isPartOfList;
         unsigned short listID;
         Value();
         Value(
             unsigned short ID,
             ValueType type,
-            unsigned int value,
+            int value,
             bool isPartOfList,
             unsigned short listID
         );
         
-        unsigned int get();
-        void set(unsigned int newValue);
+        int get();
+        void set(int newValue);
 };

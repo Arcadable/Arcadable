@@ -17,6 +17,7 @@ SystemConfig::SystemConfig(
     unsigned char regClockInputPin,
     unsigned char numAnalogInputs,
     unsigned short int analogInputPin,
+    unsigned short int analogMaxValue,
     std::vector<unsigned char> *analogSignalPins
 ) {
     this->screenWidth = screenWidth;
@@ -41,6 +42,7 @@ SystemConfig::SystemConfig(
     expandedProperties[2] = minMillisPerFrame;
     expandedProperties[3] = layoutIsZigZag;
 
+    analogValueModifier = (1 << 21) / analogMaxValue;
 
     pinMode(this->regShiftLoadPin, OUTPUT);
     pinMode(this->regClockInihibitPin, OUTPUT);
@@ -67,20 +69,25 @@ void SystemConfig::fetchInputValues() {
   delayMicroseconds(5);
   digitalWrite(this->regShiftLoadPin, HIGH);
   digitalWrite(this->regClockInihibitPin, LOW);
-
   for(unsigned char i = 0; i < this->regDataWidth ; i++) {
     digitalInputValues[i] = digitalRead(this->regSerialOutputPin);
+    if(i == 0) {
+      Serial.println(digitalInputValues[i]);
+    }
     digitalWrite(this->regClockInputPin, HIGH);
     delayMicroseconds(5);
     digitalWrite(this->regClockInputPin, LOW);
   }
+
+
   for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
     unsigned char index = 0;
     for ( auto &pin : *this->analogSignalPins ) {
       digitalWrite(pin, (i >> index) & 0b1);
       index++;
     }
-    analogInputValues[i] = analogRead(this->analogInputPin);
+    analogInputValues[i] =(((unsigned int)analogRead(this->analogInputPin) << 11) * analogValueModifier) >> 22;
+
   }
 
 };

@@ -4,7 +4,7 @@
 Value::Value(
     unsigned short ID,
     ValueType type,
-    unsigned int value,
+    int value,
     bool isPartOfList,
     unsigned short listID
 ) {
@@ -16,7 +16,7 @@ Value::Value(
     game = Arcadable::getInstance();
 };
 
-unsigned int Value::get() {
+int Value::get() {
     switch(type) {
         case integer:
         case text:
@@ -24,7 +24,7 @@ unsigned int Value::get() {
         case pixelIndex: {
             unsigned short int xCalc = ( value & 0xffff0000 ) >> 16;
             unsigned short int yCalc = value & 0x0000ffff;
-            unsigned int pixelIndex =
+            int pixelIndex =
                 game->calculations.find(yCalc)->second.result() *
                 game->systemConfig->screenWidth +
                 game->calculations.find(xCalc)->second.result();
@@ -48,28 +48,29 @@ unsigned int Value::get() {
         case list: {
             unsigned short int listID = ( value & 0xffff0000 ) >> 16;
             unsigned short int listPosCalcID = value & 0x0000ffff;
-            unsigned int listPos = game->calculations.find(listPosCalcID)->second.result();
+            int listPos = game->calculations.find(listPosCalcID)->second.result();
             std::pair<std::multimap<unsigned short int, Value>::iterator, std::multimap<unsigned short int, Value>::iterator> values;
             values = game->lists.equal_range(listID);
             std::multimap<unsigned short int, Value>::iterator it = values.first;
             std::advance( it, listPos );
-            return it->second.get();
+            return game->values.find(it->second.ID)->second.get();
         }
         default:
             return -1;
     };
 };
 
-void Value::set(unsigned int newValue) {
+void Value::set(int newValue) {
     switch(type) {
         case integer:
         case text:
             value = newValue;
+
             break;
         case pixelIndex: {
             unsigned short int xCalc = ( value & 0xffff0000 ) >> 16;
             unsigned short int yCalc = value & 0x0000ffff;
-            unsigned int pixelIndex =
+            int pixelIndex =
                 game->calculations.find(yCalc)->second.result() *
                 game->systemConfig->screenWidth +
                 game->calculations.find(xCalc)->second.result();
@@ -81,15 +82,15 @@ void Value::set(unsigned int newValue) {
         case list: {
             unsigned short int listID = ( value & 0xffff0000 ) >> 16;
             unsigned short int listPosCalcID = value & 0x0000ffff;
-            unsigned int listPos = game->calculations.find(listPosCalcID)->second.result();
+            int listPos = game->calculations.find(listPosCalcID)->second.result();
             std::pair<std::multimap<unsigned short int, Value>::iterator, std::multimap<unsigned short int, Value>::iterator> values;
             values = game->lists.equal_range(listID);
             std::multimap<unsigned short int, Value>::iterator it = values.first;
             std::advance( it, listPos );
-            Value *listValue = &it->second;
+            Value listValue = game->values.find(it->second.ID)->second;
 
-            if (listValue->type == integer || listValue->type == pixelIndex) {
-                listValue->set(newValue);
+            if (listValue.type == integer || listValue.type == pixelIndex) {
+                listValue.set(newValue);
             }
             break;
         }

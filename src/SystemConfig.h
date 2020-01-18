@@ -19,6 +19,8 @@ class SystemConfig {
         unsigned char regClockInputPin;
         unsigned char numAnalogInputs;
         unsigned short int analogInputPin;
+        unsigned short int analogMaxValue;
+        unsigned int analogValueModifier;
         std::vector<unsigned char> *analogSignalPins;
         unsigned int expandedProperties[4];
         std::map<unsigned char, bool> digitalInputValues;
@@ -39,6 +41,7 @@ class SystemConfig {
             unsigned char regClockInputPin,
             unsigned char numAnalogInputs,
             unsigned short int analogInputPin,
+            unsigned short int analogMaxValue,
             std::vector<unsigned char> *analogSignalPins
         );
 

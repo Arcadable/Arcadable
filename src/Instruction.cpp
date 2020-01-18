@@ -19,17 +19,20 @@ Instruction::Instruction(
 };
 
 void Instruction::execute() {
+
     switch(instructionType) {
         case MutateValue: {
             Value *valueLeft = &game->values.find(leftID)->second;
             if (
                 valueLeft->type == integer ||
                 valueLeft->type == pixelIndex ||
-                valueLeft->type == list
+                valueLeft->type == list ||
+                valueLeft->type == text
             ) {
-                unsigned int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
+                int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
                 valueLeft->set(right);
             }
+
             break;
         }
         case RunCondition: {
@@ -39,8 +42,8 @@ void Instruction::execute() {
         case DrawPixel: {
             unsigned short int xCalc = ( game->values.find(leftID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int yCalc = ( game->values.find(leftID)->second.value & 0x0000ffff );
-            unsigned int x = game->calculations.find(xCalc)->second.result();
-            unsigned int y = game->calculations.find(yCalc)->second.result();
+            int x = game->calculations.find(xCalc)->second.result();
+            int y = game->calculations.find(yCalc)->second.result();
             CRGB pixelColor = CRGB(rightIsValue ?
                 game->values.find(rightID)->second.get() :
                 game->calculations.find(rightID)->second.result()
@@ -58,11 +61,11 @@ void Instruction::execute() {
             unsigned short int pos2XCalc = ( game->values.find(pos2ID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int pos2YCalc = ( game->values.find(pos2ID)->second.value & 0x0000ffff );
 
-            unsigned int pos1X = game->calculations.find(pos1XCalc)->second.result();
-            unsigned int pos1Y = game->calculations.find(pos1YCalc)->second.result();
+            int pos1X = game->calculations.find(pos1XCalc)->second.result();
+            int pos1Y = game->calculations.find(pos1YCalc)->second.result();
 
-            unsigned int pos2X = game->calculations.find(pos2XCalc)->second.result();
-            unsigned int pos2Y = game->calculations.find(pos2YCalc)->second.result();
+            int pos2X = game->calculations.find(pos2XCalc)->second.result();
+            int pos2Y = game->calculations.find(pos2YCalc)->second.result();
 
             CRGB lineColor = CRGB(rightIsValue ?
                 game->values.find(rightID)->second.get() :
@@ -82,14 +85,14 @@ void Instruction::execute() {
             unsigned short int bottomRightDrawXCalc = ( game->values.find(bottomRightDrawID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int bottomRightDrawYCalc = ( game->values.find(bottomRightDrawID)->second.value & 0x0000ffff );
 
-            unsigned int topLeftDrawX = game->calculations.find(topLeftDrawXCalc)->second.result();
-            unsigned int topLeftDrawY = game->calculations.find(topLeftDrawYCalc)->second.result();
+            int topLeftDrawX = game->calculations.find(topLeftDrawXCalc)->second.result();
+            int topLeftDrawY = game->calculations.find(topLeftDrawYCalc)->second.result();
 
-            unsigned int bottomRightDrawX = game->calculations.find(bottomRightDrawXCalc)->second.result();
-            unsigned int bottomRightDrawY = game->calculations.find(bottomRightDrawYCalc)->second.result();
+            int bottomRightDrawX = game->calculations.find(bottomRightDrawXCalc)->second.result();
+            int bottomRightDrawY = game->calculations.find(bottomRightDrawYCalc)->second.result();
 
-            unsigned int width = bottomRightDrawX - topLeftDrawX;
-            unsigned int height = bottomRightDrawY - topLeftDrawY;
+            int width = bottomRightDrawX - topLeftDrawX;
+            int height = bottomRightDrawY - topLeftDrawY;
 
             CRGB drawRectColor = CRGB(rightIsValue ?
                 game->values.find(rightID)->second.get() :
@@ -110,9 +113,9 @@ void Instruction::execute() {
             unsigned short int radiusCalcID = leftID & 0x0000ffff;
             unsigned short int centerXCalcID = ( game->values.find(centerID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int centerYCalcID = ( game->values.find(centerID)->second.value & 0x0000ffff );
-            unsigned int radius = game->calculations.find(radiusCalcID)->second.result();
-            unsigned int centerX = game->calculations.find(centerXCalcID)->second.result();
-            unsigned int centerY = game->calculations.find(centerYCalcID)->second.result();
+            int radius = game->calculations.find(radiusCalcID)->second.result();
+            int centerX = game->calculations.find(centerXCalcID)->second.result();
+            int centerY = game->calculations.find(centerYCalcID)->second.result();
             CRGB drawCircleColor = CRGB(rightIsValue ?
                 game->values.find(rightID)->second.get() :
                 game->calculations.find(rightID)->second.result()
@@ -140,12 +143,12 @@ void Instruction::execute() {
             unsigned short int pixel2YCalc = ( game->values.find(pixel2DrawID)->second.value & 0x0000ffff );
             unsigned short int pixel3XCalc = ( game->values.find(pixel3DrawID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int pixel3YCalc = ( game->values.find(pixel3DrawID)->second.value & 0x0000ffff );
-            unsigned int pixel1X = game->calculations.find(pixel1XCalc)->second.result();
-            unsigned int pixel1Y = game->calculations.find(pixel1YCalc)->second.result();
-            unsigned int pixel2X = game->calculations.find(pixel2XCalc)->second.result();
-            unsigned int pixel2Y = game->calculations.find(pixel2YCalc)->second.result();
-            unsigned int pixel3X = game->calculations.find(pixel3XCalc)->second.result();
-            unsigned int pixel3Y = game->calculations.find(pixel3YCalc)->second.result();
+            int pixel1X = game->calculations.find(pixel1XCalc)->second.result();
+            int pixel1Y = game->calculations.find(pixel1YCalc)->second.result();
+            int pixel2X = game->calculations.find(pixel2XCalc)->second.result();
+            int pixel2Y = game->calculations.find(pixel2YCalc)->second.result();
+            int pixel3X = game->calculations.find(pixel3XCalc)->second.result();
+            int pixel3Y = game->calculations.find(pixel3YCalc)->second.result();
             if (instructionType == InstructionType::DrawTriangle) {
                 game->canvas->drawTriangle(pixel1X, pixel1Y, pixel2X, pixel2Y, pixel3X, pixel3Y, triangleColor);
             } else {
@@ -157,9 +160,9 @@ void Instruction::execute() {
             unsigned short int pixelTextID = (leftID & 0xffff0000) >> 16;
             unsigned short int pixelTextXCalc = ( game->values.find(pixelTextID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int pixelTextYCalc = ( game->values.find(pixelTextID)->second.value & 0x0000ffff );
-            unsigned int pixelTextX = game->calculations.find(pixelTextXCalc)->second.result();
-            unsigned int pixelTextY = game->calculations.find(pixelTextYCalc)->second.result();
-            unsigned int scale = game->values.find(leftID & 0x0000ffff)->second.get();
+            int pixelTextX = game->calculations.find(pixelTextXCalc)->second.result();
+            int pixelTextY = game->calculations.find(pixelTextYCalc)->second.result();
+            int scale = game->values.find(leftID & 0x0000ffff)->second.get();
             unsigned short int listID = (rightID & 0xffff0000) >> 16;
             CRGB textColor = CRGB(rightIsValue ?
                 game->values.find(rightID & 0x0000ffff)->second.get() :
@@ -169,22 +172,21 @@ void Instruction::execute() {
             values = game->lists.equal_range(listID);
             std::vector<char> text;
             for (std::multimap<unsigned short int, Value>::iterator it = values.first; it != values.second; it++) {
-                Value *value = &it->second;
-                if (value->type == ValueType::text) {
-                    Serial.println(value->value);
-                    char c = (value->value & 0xFF000000) >> 24;
+                Value value = game->values.find(it->second.ID)->second;
+                if (value.type == ValueType::text) {
+                    char c = (value.value & 0xFF000000) >> 24;
                     if (c != 0) {
                         text.push_back(c);
                     }
-                    c = (value->value & 0x00FF0000) >> 16;
+                    c = (value.value & 0x00FF0000) >> 16;
                     if (c != 0) {
                         text.push_back(c);
                     }
-                    c = (value->value & 0x0000FF00) >> 8;
+                    c = (value.value & 0x0000FF00) >> 8;
                     if (c != 0) {
                         text.push_back(c);
                     }
-                    c = value->value & 0x000000FF;
+                    c = value.value & 0x000000FF;
                     if (c != 0) {
                         text.push_back(c);
                     }
@@ -195,7 +197,6 @@ void Instruction::execute() {
                 text.push_back(' ');
             }
        
-
 
             game->canvas->setCursor(pixelTextX, pixelTextY);
             game->canvas->setTextColor(textColor);
