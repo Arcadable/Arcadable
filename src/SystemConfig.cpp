@@ -69,17 +69,17 @@ void SystemConfig::fetchInputValues() {
   delayMicroseconds(5);
   digitalWrite(this->regShiftLoadPin, HIGH);
   digitalWrite(this->regClockInihibitPin, LOW);
+  Serial.println("digital");
   for(unsigned char i = 0; i < this->regDataWidth ; i++) {
     digitalInputValues[i] = digitalRead(this->regSerialOutputPin);
-    if(i == 0) {
       Serial.println(digitalInputValues[i]);
-    }
     digitalWrite(this->regClockInputPin, HIGH);
     delayMicroseconds(5);
     digitalWrite(this->regClockInputPin, LOW);
   }
-
-
+  Serial.println();
+Serial.println();
+  Serial.println("analog");
   for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
     unsigned char index = 0;
     for ( auto &pin : *this->analogSignalPins ) {
@@ -87,7 +87,7 @@ void SystemConfig::fetchInputValues() {
       index++;
     }
     analogInputValues[i] =(((unsigned int)analogRead(this->analogInputPin) << 11) * analogValueModifier) >> 22;
-
+      Serial.println(analogInputValues[i]);
   }
 
 };

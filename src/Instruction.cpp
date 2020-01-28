@@ -208,6 +208,9 @@ void Instruction::execute() {
         case Clear: {
             game->canvas->fillScreen(CRGB::Black);
         }
+        case SetRotation: {
+            game->canvas->setRotation(leftID);
+        }
         break;
     }
 };

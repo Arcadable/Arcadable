@@ -13,7 +13,8 @@ enum InstructionType {
     DrawTriangle,
     FillTriangle,
     DrawText,
-    Clear
+    Clear,
+    SetRotation
 };
 class Instruction {
 
