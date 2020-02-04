@@ -120,11 +120,12 @@ void Arcadable::_readAndLoadGameLogic() {
 
 	for (unsigned int i = 0 ; i < sizeof(valuesData)/sizeof(valuesData[0]) ;) {
 		unsigned short id = static_cast<unsigned short>((valuesData[i + 0] << 8) + valuesData[i + 1]);
-		int value = static_cast<int>(((valuesData[i + 2] & 0b01111111) << 24) + (valuesData[i + 3] << 16) + (valuesData[i + 4] << 8) + valuesData[i + 5]);
+		u_int8_t raw[4] = {valuesData[i + 2], valuesData[i + 3], valuesData[i + 4], valuesData[i + 5]};
+    float value = *(float *)raw;
+
 		ValueType type = static_cast<ValueType>(valuesData[i + 6] >> 1);
 		bool isPartOfList = static_cast<bool>(valuesData[i + 6] & 0b1);
 		unsigned short listId = isPartOfList ? static_cast<unsigned short >((valuesData[i + 7] << 8) + valuesData[i + 8]) : 0;
-
 		if ((valuesData[i + 2] >> 7) == 1) {
 			value = value * -1;
 		}

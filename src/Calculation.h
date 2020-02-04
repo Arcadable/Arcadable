@@ -1,7 +1,8 @@
 #pragma once
 #define Calculation_h
 #include "ArcadableLib.h"
-enum CalculationOperator { add, sub, mul, subdiv, mod, b_and, b_or, b_xor, lsh, rsh };
+#include <cmath>
+enum CalculationOperator { add, sub, mul, subdiv, mod, b_and, b_or, b_xor, lsh, rsh, math_pow };
 
 class Calculation {
 
@@ -25,7 +26,7 @@ class Calculation {
             CalculationOperator calculationOperator,
             bool isStatic
         );
-        int result();
+        float result();
     private:
-        int _staticResult;
+        float _staticResult;
 };

@@ -16,20 +16,20 @@ Calculation::Calculation(
     this->rightIsValue = rightIsValue;
     this->rightID = rightID;
     this->isStatic = isStatic;
-    this->_staticResult = (int)(-1);
+    this->_staticResult = (float)(-1);
     game = Arcadable::getInstance();
 };
 
-int Calculation::result() {
+float Calculation::result() {
 
-    if (isStatic && _staticResult != (int)(-1)) {
+    if (isStatic && _staticResult != (float)(-1)) {
         return _staticResult;
     }
 
-    int left = leftIsValue ? game->values.find(leftID)->second.get() : game->calculations.find(leftID)->second.result();
-    int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
+    float left = leftIsValue ? game->values.find(leftID)->second.get() : game->calculations.find(leftID)->second.result();
+    float right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
 
-    int result = -1;
+    float result = -1;
     switch(calculationOperator) {
         case add:
             result = left + right;
@@ -44,22 +44,25 @@ int Calculation::result() {
             result =  left / right;
             break;
         case mod:
-            result =  left % right;
+            result =  static_cast<int>(left) % static_cast<int>(right);
             break;
         case b_and:
-            result =  left & right;
+            result =  static_cast<int>(left) & static_cast<int>(right);
             break;
         case b_or:
-            result =  left | right;
+            result =  static_cast<int>(left) | static_cast<int>(right);
             break;
         case b_xor:
-            result =  left ^ right;
+            result =  static_cast<int>(left) ^ static_cast<int>(right);
             break;
         case lsh:
-            result =  left << right;
+            result =  static_cast<int>(left) << static_cast<int>(right);
             break;
         case rsh:
-            result =  left >> right;
+            result =  static_cast<int>(left) >> static_cast<int>(right);
+            break;
+        case math_pow:
+            result =  pow(left, right);
             break;
         default:
             result =  -1;

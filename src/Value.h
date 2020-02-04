@@ -31,6 +31,6 @@ class Value {
             unsigned short listID
         );
         
-        int get();
+        float get();
         void set(int newValue);
 };

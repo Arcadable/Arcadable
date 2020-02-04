@@ -29,8 +29,22 @@ void Instruction::execute() {
                 valueLeft->type == list ||
                 valueLeft->type == text
             ) {
-                int right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
-                valueLeft->set(right);
+                float right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
+                switch(valueLeft->type) {
+                    case list:
+                    case integer: {
+                        unsigned char const * p = reinterpret_cast<unsigned char const *>(&right);
+                        valueLeft->set((p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3]);
+                        break;
+                    }
+                    case text:
+                    case pixelIndex: {
+                        valueLeft->set(static_cast<int>(right));
+                        break;
+                    }
+                    default:
+                    break;
+                }
             }
 
             break;
@@ -42,11 +56,15 @@ void Instruction::execute() {
         case DrawPixel: {
             unsigned short int xCalc = ( game->values.find(leftID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int yCalc = ( game->values.find(leftID)->second.value & 0x0000ffff );
-            int x = game->calculations.find(xCalc)->second.result();
-            int y = game->calculations.find(yCalc)->second.result();
-            CRGB pixelColor = CRGB(rightIsValue ?
-                game->values.find(rightID)->second.get() :
-                game->calculations.find(rightID)->second.result()
+            
+            int x = static_cast<int>(game->calculations.find(xCalc)->second.result());
+            int y = static_cast<int>(game->calculations.find(yCalc)->second.result());
+            CRGB pixelColor = CRGB(
+                static_cast<int>(
+                    rightIsValue ?
+                    game->values.find(rightID)->second.get() :
+                    game->calculations.find(rightID)->second.result()
+                )
             );
             game->canvas->drawPixel(x, y, pixelColor);
             break;
@@ -61,15 +79,18 @@ void Instruction::execute() {
             unsigned short int pos2XCalc = ( game->values.find(pos2ID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int pos2YCalc = ( game->values.find(pos2ID)->second.value & 0x0000ffff );
 
-            int pos1X = game->calculations.find(pos1XCalc)->second.result();
-            int pos1Y = game->calculations.find(pos1YCalc)->second.result();
+            int pos1X = static_cast<int>(game->calculations.find(pos1XCalc)->second.result());
+            int pos1Y = static_cast<int>(game->calculations.find(pos1YCalc)->second.result());
 
-            int pos2X = game->calculations.find(pos2XCalc)->second.result();
-            int pos2Y = game->calculations.find(pos2YCalc)->second.result();
+            int pos2X = static_cast<int>(game->calculations.find(pos2XCalc)->second.result());
+            int pos2Y = static_cast<int>(game->calculations.find(pos2YCalc)->second.result());
 
-            CRGB lineColor = CRGB(rightIsValue ?
-                game->values.find(rightID)->second.get() :
-                game->calculations.find(rightID)->second.result()
+            CRGB lineColor = CRGB(
+                static_cast<int>(
+                    rightIsValue ?
+                    game->values.find(rightID)->second.get() :
+                    game->calculations.find(rightID)->second.result()
+                )
             );
             game->canvas->drawLine(pos1X, pos1Y, pos2X, pos2Y, lineColor);
             break;
@@ -85,18 +106,21 @@ void Instruction::execute() {
             unsigned short int bottomRightDrawXCalc = ( game->values.find(bottomRightDrawID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int bottomRightDrawYCalc = ( game->values.find(bottomRightDrawID)->second.value & 0x0000ffff );
 
-            int topLeftDrawX = game->calculations.find(topLeftDrawXCalc)->second.result();
-            int topLeftDrawY = game->calculations.find(topLeftDrawYCalc)->second.result();
+            int topLeftDrawX = static_cast<int>(game->calculations.find(topLeftDrawXCalc)->second.result());
+            int topLeftDrawY = static_cast<int>(game->calculations.find(topLeftDrawYCalc)->second.result());
 
-            int bottomRightDrawX = game->calculations.find(bottomRightDrawXCalc)->second.result();
-            int bottomRightDrawY = game->calculations.find(bottomRightDrawYCalc)->second.result();
+            int bottomRightDrawX = static_cast<int>(game->calculations.find(bottomRightDrawXCalc)->second.result());
+            int bottomRightDrawY = static_cast<int>(game->calculations.find(bottomRightDrawYCalc)->second.result());
 
             int width = bottomRightDrawX - topLeftDrawX;
             int height = bottomRightDrawY - topLeftDrawY;
 
-            CRGB drawRectColor = CRGB(rightIsValue ?
-                game->values.find(rightID)->second.get() :
-                game->calculations.find(rightID)->second.result()
+            CRGB drawRectColor = CRGB(
+                static_cast<int>(
+                    rightIsValue ?
+                    game->values.find(rightID)->second.get() :
+                    game->calculations.find(rightID)->second.result()
+                )
             );
 
             if (instructionType == InstructionType::DrawRect) {
@@ -113,12 +137,16 @@ void Instruction::execute() {
             unsigned short int radiusCalcID = leftID & 0x0000ffff;
             unsigned short int centerXCalcID = ( game->values.find(centerID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int centerYCalcID = ( game->values.find(centerID)->second.value & 0x0000ffff );
-            int radius = game->calculations.find(radiusCalcID)->second.result();
-            int centerX = game->calculations.find(centerXCalcID)->second.result();
-            int centerY = game->calculations.find(centerYCalcID)->second.result();
-            CRGB drawCircleColor = CRGB(rightIsValue ?
-                game->values.find(rightID)->second.get() :
-                game->calculations.find(rightID)->second.result()
+            
+            int radius = static_cast<int>(game->calculations.find(radiusCalcID)->second.result());
+            int centerX = static_cast<int>(game->calculations.find(centerXCalcID)->second.result());
+            int centerY = static_cast<int>(game->calculations.find(centerYCalcID)->second.result());
+            CRGB drawCircleColor = CRGB(
+                static_cast<int>(
+                    rightIsValue ?
+                    game->values.find(rightID)->second.get() :
+                    game->calculations.find(rightID)->second.result()
+                )
             );
 
             if (instructionType == InstructionType::DrawCircle) {
@@ -143,12 +171,13 @@ void Instruction::execute() {
             unsigned short int pixel2YCalc = ( game->values.find(pixel2DrawID)->second.value & 0x0000ffff );
             unsigned short int pixel3XCalc = ( game->values.find(pixel3DrawID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int pixel3YCalc = ( game->values.find(pixel3DrawID)->second.value & 0x0000ffff );
-            int pixel1X = game->calculations.find(pixel1XCalc)->second.result();
-            int pixel1Y = game->calculations.find(pixel1YCalc)->second.result();
-            int pixel2X = game->calculations.find(pixel2XCalc)->second.result();
-            int pixel2Y = game->calculations.find(pixel2YCalc)->second.result();
-            int pixel3X = game->calculations.find(pixel3XCalc)->second.result();
-            int pixel3Y = game->calculations.find(pixel3YCalc)->second.result();
+            
+            int pixel1X = static_cast<int>(game->calculations.find(pixel1XCalc)->second.result());
+            int pixel1Y = static_cast<int>(game->calculations.find(pixel1YCalc)->second.result());
+            int pixel2X = static_cast<int>(game->calculations.find(pixel2XCalc)->second.result());
+            int pixel2Y = static_cast<int>(game->calculations.find(pixel2YCalc)->second.result());
+            int pixel3X = static_cast<int>(game->calculations.find(pixel3XCalc)->second.result());
+            int pixel3Y = static_cast<int>(game->calculations.find(pixel3YCalc)->second.result());
             if (instructionType == InstructionType::DrawTriangle) {
                 game->canvas->drawTriangle(pixel1X, pixel1Y, pixel2X, pixel2Y, pixel3X, pixel3Y, triangleColor);
             } else {
@@ -160,13 +189,17 @@ void Instruction::execute() {
             unsigned short int pixelTextID = (leftID & 0xffff0000) >> 16;
             unsigned short int pixelTextXCalc = ( game->values.find(pixelTextID)->second.value & 0xffff0000 ) >> 16;
             unsigned short int pixelTextYCalc = ( game->values.find(pixelTextID)->second.value & 0x0000ffff );
-            int pixelTextX = game->calculations.find(pixelTextXCalc)->second.result();
-            int pixelTextY = game->calculations.find(pixelTextYCalc)->second.result();
-            int scale = game->values.find(leftID & 0x0000ffff)->second.get();
+            
+            int pixelTextX = static_cast<int>(game->calculations.find(pixelTextXCalc)->second.result());
+            int pixelTextY = static_cast<int>(game->calculations.find(pixelTextYCalc)->second.result());
+            int scale = static_cast<int>(game->values.find(leftID & 0x0000ffff)->second.get());
             unsigned short int listID = (rightID & 0xffff0000) >> 16;
-            CRGB textColor = CRGB(rightIsValue ?
-                game->values.find(rightID & 0x0000ffff)->second.get() :
-                game->calculations.find(rightID & 0x0000ffff)->second.result()
+            CRGB textColor = CRGB(
+                static_cast<int>(
+                    rightIsValue ?
+                    game->values.find(rightID & 0x0000ffff)->second.get() :
+                    game->calculations.find(rightID & 0x0000ffff)->second.result()
+                )
             );
             std::pair<std::multimap<unsigned short int, Value>::iterator, std::multimap<unsigned short int, Value>::iterator> values;
             values = game->lists.equal_range(listID);
