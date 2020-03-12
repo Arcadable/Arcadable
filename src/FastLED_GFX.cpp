@@ -953,10 +953,10 @@ void GFXcanvas::drawPixel(int16_t x, int16_t y, CRGB color) {
     y = HEIGHT - 1 - t;
     break;
   }
-  game->pixels[x + y * WIDTH] = color;
+  game->pixelsBuffer[x + y * WIDTH] = color;
 }
 
 void GFXcanvas::fillScreen(CRGB color) {
   uint16_t i, pixels = WIDTH * HEIGHT;
-  for(i=0; i<pixels; i++) game->pixels[i] = color;
+  for(i=0; i<pixels; i++) game->pixelsBuffer[i] = color;
 }

@@ -13,14 +13,16 @@ Arcadable *Arcadable::getInstance() {
 void Arcadable::setup(
 	SystemConfig *systemConfig,
 	CRGB *pixels,
+	CRGB *pixelsBuffer,
 	GFXcanvas* canvas
 ) {
 	this->systemConfig = systemConfig;
 	this->pixels = pixels;
 	this->canvas = canvas;
-;
+	this->pixelsBuffer = pixelsBuffer;
 	for (unsigned short int i = 0; i < systemConfig->screenWidth * systemConfig->screenHeight; i++) {
 		this->pixels[i] = CRGB(0 + (0 << 8) + (0 << 16));
+		this->pixelsBuffer[i] = CRGB(0 + (0 << 8) + (0 << 16));
 	}
 	Wire.begin();
  	Wire.setClock(systemConfig->wireClock);
@@ -32,6 +34,7 @@ void Arcadable::step() {
 		if (_pollImmediately) {
 			_pollImmediately = false;
 		}
+		Serial.println("Poll gamecard");
 		Wire.beginTransmission(systemConfig->eepromAddress);
 		Wire.write(0);
 		Wire.write(0);
@@ -62,34 +65,61 @@ void Arcadable::step() {
 		_doGameStep();
 		_prevGameMillis = millis();
 	} else {
-		delay(systemConfig->minMillisPerFrame);
+		if(!_pollImmediately) {
+			canvas->setTextColor(0xffffff);
+			canvas->setTextSize(1);
+			canvas->setTextWrap(false);
+			canvas->fillScreen(CRGB::Black);
+
+			canvas->setCursor(systemConfig->screenWidth / 2 - 18, systemConfig->screenHeight / 2 - 10);
+			canvas->print("Insert");
+
+			canvas->setCursor(systemConfig->screenWidth / 2 - 12, systemConfig->screenHeight / 2 + 2);
+			canvas->print("Card");
+			delay(systemConfig->minMillisPerFrame);
+		} else {
+
+			canvas->fillScreen(CRGB::Black);
+			canvas->drawRect(systemConfig->screenWidth / 2 - 5, systemConfig->screenHeight / 2 - 2, 4, 4, CRGB::White);
+			canvas->drawRect(systemConfig->screenWidth / 2 + 2, systemConfig->screenHeight / 2 - 1, 2, 2, CRGB::White);
+			
+		
+			delay(systemConfig->minMillisPerFrame);
+		}
 	}
-
-}
-
-void Arcadable::_doGameStep() {
-
-	systemConfig->fetchInputValues();
-	Serial.print("Step "); Serial.println(millis());
-
-	for ( auto &condition : rootConditions ) {
-		condition.execute();
-	}
-
 
 	if(systemConfig->layoutIsZigZag) {
 		for(unsigned short int column = 0; column < systemConfig->screenWidth; column++) {
 			if (column % 2 == 1) {
 				CRGB tempLeds[systemConfig->screenHeight];
 				for (int row = 0; row < systemConfig->screenHeight; row++) {
-					tempLeds[(systemConfig->screenHeight - 1) - row] = pixels[column * systemConfig->screenWidth + row];  
+					tempLeds[(systemConfig->screenHeight - 1) - row] = pixelsBuffer[column * systemConfig->screenWidth + row];  
 				}
 				for (int row = 0; row < systemConfig->screenHeight; row++) {
 					pixels[column * systemConfig->screenWidth + row] = tempLeds[row];  
 				}
+			} else {
+				for (int row = 0; row < systemConfig->screenHeight; row++) {
+					pixels[column * systemConfig->screenWidth + row] = pixelsBuffer[column * systemConfig->screenWidth + row];  
+				}
 			}
 		}
+	} else {
+		for(unsigned short int index = 0; index < systemConfig->screenWidth * systemConfig->screenHeight; index++) {
+			pixels[index] = pixelsBuffer[index];  
+		}
 	}
+}
+
+void Arcadable::_doGameStep() {
+	Serial.print("Step: ");
+	Serial.println(millis());
+	systemConfig->fetchInputValues();
+	for ( auto &condition : rootConditions ) {
+		condition.execute();
+	}
+
+	
 };
 
 void Arcadable::_unloadGameLogic() {
@@ -102,6 +132,8 @@ void Arcadable::_unloadGameLogic() {
 	calculations.clear();
 	instructions.clear();
 	conditions.clear();
+	rootConditions.clear();
+
 }
 
 void Arcadable::_readAndLoadGameLogic() {
@@ -113,6 +145,7 @@ void Arcadable::_readAndLoadGameLogic() {
 	_readEEPROM(currentParsePosition, 2, valuesLengthData);
 	unsigned short int valuesLength = (valuesLengthData[0] << 8) + valuesLengthData[1];
 	currentParsePosition += 2;
+
 	unsigned char valuesData[valuesLength];
 	_readEEPROM(currentParsePosition, valuesLength, valuesData);
 	currentParsePosition += valuesLength;
@@ -120,15 +153,36 @@ void Arcadable::_readAndLoadGameLogic() {
 
 	for (unsigned int i = 0 ; i < sizeof(valuesData)/sizeof(valuesData[0]) ;) {
 		unsigned short id = static_cast<unsigned short>((valuesData[i + 0] << 8) + valuesData[i + 1]);
-		u_int8_t raw[4] = {valuesData[i + 2], valuesData[i + 3], valuesData[i + 4], valuesData[i + 5]};
-    float value = *(float *)raw;
+
+		double value;
 
 		ValueType type = static_cast<ValueType>(valuesData[i + 6] >> 1);
 		bool isPartOfList = static_cast<bool>(valuesData[i + 6] & 0b1);
 		unsigned short listId = isPartOfList ? static_cast<unsigned short >((valuesData[i + 7] << 8) + valuesData[i + 8]) : 0;
-		if ((valuesData[i + 2] >> 7) == 1) {
-			value = value * -1;
+
+		switch(type) {
+			case number: {
+				float floatValue;
+				*((int*) &floatValue) = (valuesData[i + 2] << 24) + (valuesData[i + 3] << 16) + (valuesData[i + 4] << 8) + (valuesData[i + 5]);
+				value = floatValue;
+				break;
+			}
+    	case pixelIndex:
+    	case digitalInputPointer:
+    	case analogInputPointer:
+    	case systemPointer:
+    	case list:
+    	case text: {
+				value = (valuesData[i + 2] << 24) + (valuesData[i + 3] << 16) + (valuesData[i + 4] << 8) + (valuesData[i + 5]);
+				break;
+			}
+			default: {
+				value = -1;
+				break;
+			}
 		}
+
+
 
 		Value typedValue(
 			id,
@@ -245,7 +299,11 @@ void Arcadable::_readAndLoadGameLogic() {
 		instructions.insert(std::pair<unsigned short int, Instruction>(id, typedInstruction));
 		i += 11;
 	}
+
+	startMillis = millis();
+
 	Serial.println("Done loading!");
+	
 }
 
 void Arcadable::_readEEPROM(unsigned int startAddress, unsigned int dataLength, unsigned char *dataReceiver) {

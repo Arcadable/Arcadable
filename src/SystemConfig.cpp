@@ -36,6 +36,7 @@ SystemConfig::SystemConfig(
     this->numAnalogInputs = numAnalogInputs;
     this->analogSignalPins = analogSignalPins;
     this->analogInputPin = analogInputPin;
+    this->analogMaxValue = analogMaxValue;
 
     expandedProperties[0] = screenWidth;
     expandedProperties[1] = screenHeight;
@@ -69,25 +70,27 @@ void SystemConfig::fetchInputValues() {
   delayMicroseconds(5);
   digitalWrite(this->regShiftLoadPin, HIGH);
   digitalWrite(this->regClockInihibitPin, LOW);
-  Serial.println("digital");
+
   for(unsigned char i = 0; i < this->regDataWidth ; i++) {
     digitalInputValues[i] = digitalRead(this->regSerialOutputPin);
-      Serial.println(digitalInputValues[i]);
     digitalWrite(this->regClockInputPin, HIGH);
     delayMicroseconds(5);
     digitalWrite(this->regClockInputPin, LOW);
   }
-  Serial.println();
-Serial.println();
-  Serial.println("analog");
+
   for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
     unsigned char index = 0;
     for ( auto &pin : *this->analogSignalPins ) {
       digitalWrite(pin, (i >> index) & 0b1);
       index++;
     }
-    analogInputValues[i] =(((unsigned int)analogRead(this->analogInputPin) << 11) * analogValueModifier) >> 22;
-      Serial.println(analogInputValues[i]);
+    unsigned short readValue = analogRead(this->analogInputPin);
+    if(readValue > this->analogMaxValue) {
+      analogInputValues[i] = 1023;
+    } else {
+      analogInputValues[i] =(((unsigned int)readValue << 11) * analogValueModifier) >> 22;
+    }
+
   }
 
 };

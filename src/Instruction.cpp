@@ -19,32 +19,17 @@ Instruction::Instruction(
 };
 
 void Instruction::execute() {
-
     switch(instructionType) {
         case MutateValue: {
             Value *valueLeft = &game->values.find(leftID)->second;
             if (
-                valueLeft->type == integer ||
+                valueLeft->type == number ||
                 valueLeft->type == pixelIndex ||
                 valueLeft->type == list ||
                 valueLeft->type == text
             ) {
-                float right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
-                switch(valueLeft->type) {
-                    case list:
-                    case integer: {
-                        unsigned char const * p = reinterpret_cast<unsigned char const *>(&right);
-                        valueLeft->set((p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3]);
-                        break;
-                    }
-                    case text:
-                    case pixelIndex: {
-                        valueLeft->set(static_cast<int>(right));
-                        break;
-                    }
-                    default:
-                    break;
-                }
+                double right = rightIsValue ? game->values.find(rightID)->second.get() : game->calculations.find(rightID)->second.result();
+                valueLeft->set(right);
             }
 
             break;
@@ -54,8 +39,8 @@ void Instruction::execute() {
             break;
         }
         case DrawPixel: {
-            unsigned short int xCalc = ( game->values.find(leftID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int yCalc = ( game->values.find(leftID)->second.value & 0x0000ffff );
+            unsigned short int xCalc = ( static_cast<int>(game->values.find(leftID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int yCalc = ( static_cast<int>(game->values.find(leftID)->second.value) & 0x0000ffff );
             
             int x = static_cast<int>(game->calculations.find(xCalc)->second.result());
             int y = static_cast<int>(game->calculations.find(yCalc)->second.result());
@@ -73,11 +58,11 @@ void Instruction::execute() {
             unsigned short int pos1ID = (leftID & 0xffff0000) >> 16;
             unsigned short int pos2ID = leftID & 0x0000ffff;
 
-            unsigned short int pos1XCalc = ( game->values.find(pos1ID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int pos1YCalc = ( game->values.find(pos1ID)->second.value & 0x0000ffff );
+            unsigned short int pos1XCalc = ( static_cast<int>(game->values.find(pos1ID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int pos1YCalc = ( static_cast<int>(game->values.find(pos1ID)->second.value) & 0x0000ffff );
 
-            unsigned short int pos2XCalc = ( game->values.find(pos2ID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int pos2YCalc = ( game->values.find(pos2ID)->second.value & 0x0000ffff );
+            unsigned short int pos2XCalc = ( static_cast<int>(game->values.find(pos2ID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int pos2YCalc = ( static_cast<int>(game->values.find(pos2ID)->second.value) & 0x0000ffff );
 
             int pos1X = static_cast<int>(game->calculations.find(pos1XCalc)->second.result());
             int pos1Y = static_cast<int>(game->calculations.find(pos1YCalc)->second.result());
@@ -100,11 +85,11 @@ void Instruction::execute() {
             unsigned short int topLeftDrawID = (leftID & 0xffff0000) >> 16;
             unsigned short int bottomRightDrawID = leftID & 0x0000ffff;
 
-            unsigned short int topLeftDrawXCalc = ( game->values.find(topLeftDrawID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int topLeftDrawYCalc = ( game->values.find(topLeftDrawID)->second.value & 0x0000ffff );
+            unsigned short int topLeftDrawXCalc = ( static_cast<int>(game->values.find(topLeftDrawID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int topLeftDrawYCalc = ( static_cast<int>(game->values.find(topLeftDrawID)->second.value) & 0x0000ffff );
 
-            unsigned short int bottomRightDrawXCalc = ( game->values.find(bottomRightDrawID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int bottomRightDrawYCalc = ( game->values.find(bottomRightDrawID)->second.value & 0x0000ffff );
+            unsigned short int bottomRightDrawXCalc = ( static_cast<int>(game->values.find(bottomRightDrawID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int bottomRightDrawYCalc = ( static_cast<int>(game->values.find(bottomRightDrawID)->second.value) & 0x0000ffff );
 
             int topLeftDrawX = static_cast<int>(game->calculations.find(topLeftDrawXCalc)->second.result());
             int topLeftDrawY = static_cast<int>(game->calculations.find(topLeftDrawYCalc)->second.result());
@@ -135,8 +120,8 @@ void Instruction::execute() {
         case FillCircle: {
             unsigned short int centerID = (leftID & 0xffff0000) >> 16;
             unsigned short int radiusCalcID = leftID & 0x0000ffff;
-            unsigned short int centerXCalcID = ( game->values.find(centerID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int centerYCalcID = ( game->values.find(centerID)->second.value & 0x0000ffff );
+            unsigned short int centerXCalcID = ( static_cast<int>(game->values.find(centerID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int centerYCalcID = ( static_cast<int>(game->values.find(centerID)->second.value) & 0x0000ffff );
             
             int radius = static_cast<int>(game->calculations.find(radiusCalcID)->second.result());
             int centerX = static_cast<int>(game->calculations.find(centerXCalcID)->second.result());
@@ -165,12 +150,12 @@ void Instruction::execute() {
                 game->values.find(rightID & 0x0000ffff)->second.get() :
                 game->calculations.find(rightID & 0x0000ffff)->second.result()
             );
-            unsigned short int pixel1XCalc = ( game->values.find(pixel1DrawID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int pixel1YCalc = ( game->values.find(pixel1DrawID)->second.value & 0x0000ffff );
-            unsigned short int pixel2XCalc = ( game->values.find(pixel2DrawID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int pixel2YCalc = ( game->values.find(pixel2DrawID)->second.value & 0x0000ffff );
-            unsigned short int pixel3XCalc = ( game->values.find(pixel3DrawID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int pixel3YCalc = ( game->values.find(pixel3DrawID)->second.value & 0x0000ffff );
+            unsigned short int pixel1XCalc = ( static_cast<int>(game->values.find(pixel1DrawID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int pixel1YCalc = ( static_cast<int>(game->values.find(pixel1DrawID)->second.value) & 0x0000ffff );
+            unsigned short int pixel2XCalc = ( static_cast<int>(game->values.find(pixel2DrawID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int pixel2YCalc = ( static_cast<int>(game->values.find(pixel2DrawID)->second.value) & 0x0000ffff );
+            unsigned short int pixel3XCalc = ( static_cast<int>(game->values.find(pixel3DrawID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int pixel3YCalc = ( static_cast<int>(game->values.find(pixel3DrawID)->second.value) & 0x0000ffff );
             
             int pixel1X = static_cast<int>(game->calculations.find(pixel1XCalc)->second.result());
             int pixel1Y = static_cast<int>(game->calculations.find(pixel1YCalc)->second.result());
@@ -187,8 +172,8 @@ void Instruction::execute() {
         }
         case DrawText: {
             unsigned short int pixelTextID = (leftID & 0xffff0000) >> 16;
-            unsigned short int pixelTextXCalc = ( game->values.find(pixelTextID)->second.value & 0xffff0000 ) >> 16;
-            unsigned short int pixelTextYCalc = ( game->values.find(pixelTextID)->second.value & 0x0000ffff );
+            unsigned short int pixelTextXCalc = ( static_cast<int>(game->values.find(pixelTextID)->second.value) & 0xffff0000 ) >> 16;
+            unsigned short int pixelTextYCalc = ( static_cast<int>(game->values.find(pixelTextID)->second.value) & 0x0000ffff );
             
             int pixelTextX = static_cast<int>(game->calculations.find(pixelTextXCalc)->second.result());
             int pixelTextY = static_cast<int>(game->calculations.find(pixelTextYCalc)->second.result());
@@ -207,19 +192,19 @@ void Instruction::execute() {
             for (std::multimap<unsigned short int, Value>::iterator it = values.first; it != values.second; it++) {
                 Value value = game->values.find(it->second.ID)->second;
                 if (value.type == ValueType::text) {
-                    char c = (value.value & 0xFF000000) >> 24;
+                    char c = (static_cast<int>(value.value) & 0xFF000000) >> 24;
                     if (c != 0) {
                         text.push_back(c);
                     }
-                    c = (value.value & 0x00FF0000) >> 16;
+                    c = (static_cast<int>(value.value) & 0x00FF0000) >> 16;
                     if (c != 0) {
                         text.push_back(c);
                     }
-                    c = (value.value & 0x0000FF00) >> 8;
+                    c = (static_cast<int>(value.value) & 0x0000FF00) >> 8;
                     if (c != 0) {
                         text.push_back(c);
                     }
-                    c = value.value & 0x000000FF;
+                    c = static_cast<int>(value.value) & 0x000000FF;
                     if (c != 0) {
                         text.push_back(c);
                     }

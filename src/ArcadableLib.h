@@ -31,12 +31,16 @@ class Arcadable {
 		std::multimap<unsigned short int, Value> lists;
 		std::vector<Condition> rootConditions;
 		CRGB* pixels;
+		CRGB* pixelsBuffer;
 		GFXcanvas* canvas;
+
+		long int startMillis;
 
 		static Arcadable *getInstance();
 		void setup(
 			SystemConfig *systemConfig,
 			CRGB *pixels,
+			CRGB *pixelsBuffer,
 			GFXcanvas* canvas
 		);
 
@@ -49,6 +53,7 @@ class Arcadable {
 		bool _gameLoaded = false;
 		bool _readyToLoad = true;
 		bool _pollImmediately = false;
+
 		void _doGameStep();
 		void _unloadGameLogic();
 		void _readAndLoadGameLogic();

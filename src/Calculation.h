@@ -26,7 +26,7 @@ class Calculation {
             CalculationOperator calculationOperator,
             bool isStatic
         );
-        float result();
+        double result();
     private:
-        float _staticResult;
+        double _staticResult;
 };

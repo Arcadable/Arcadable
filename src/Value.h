@@ -4,7 +4,7 @@
 
 enum ValueType {
 
-    integer,
+    number,
     pixelIndex,
     digitalInputPointer,
     analogInputPointer,
@@ -19,18 +19,18 @@ class Value {
         unsigned short ID;
         Arcadable *game;
         ValueType type;
-        int value;
+        double value;
         bool isPartOfList;
         unsigned short listID;
         Value();
         Value(
             unsigned short ID,
             ValueType type,
-            int value,
+            double value,
             bool isPartOfList,
             unsigned short listID
         );
         
-        float get();
-        void set(int newValue);
+        double get();
+        void set(double newValue);
 };
