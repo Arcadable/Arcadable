@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/niek/.arduino15/packages/arduino/tools/**",
+                "/home/niek/.arduino15/packages/arduino/hardware/avr/1.8.2/**",
+                "${workspaceFolder}/**",
+                "/home/niek/.arduino15/packages/arduino/hardware/avr/1.8.2/cores/arduino",
+                "/home/niek/Programs/arduino-1.8.10/hardware/teensy/avr/libraries/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "clang-x64",
+            "forcedInclude": [
+                "/home/niek/.arduino15/packages/arduino/hardware/avr/1.8.2/cores/arduino/Arduino.h"
+            ]
+        }
+    ],
+    "version": 4
+}

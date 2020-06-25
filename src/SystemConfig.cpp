@@ -1,10 +1,63 @@
 #include "SystemConfig.h"
-#include "Arduino.h"
+
+void SystemConfig::fetchInputValues() {
+digitalWrite(this->regClockInihibitPin, HIGH);
+digitalWrite(this->regShiftLoadPin, LOW);
+delayMicroseconds(5);
+digitalWrite(this->regShiftLoadPin, HIGH);
+digitalWrite(this->regClockInihibitPin, LOW);
+
+for(unsigned char i = 0; i < this->regDataWidth ; i++) {
+    digitalInputValues[i] = digitalRead(this->regSerialOutputPin);
+    digitalWrite(this->regClockInputPin, HIGH);
+    delayMicroseconds(5);
+    digitalWrite(this->regClockInputPin, LOW);
+}
+
+for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
+    unsigned char index = 0;
+    for ( auto &pin : *this->analogSignalPins ) {
+    digitalWrite(pin, (i >> index) & 0b1);
+    index++;
+    }
+    unsigned short readValue = analogRead(this->analogInputPin);
+    if(readValue > this->analogMaxValue) {
+    analogInputValues[i] = 1023;
+    } else {
+    analogInputValues[i] =(((unsigned int)readValue << 11) * analogValueModifier) >> 22;
+    }
+}
+};
+
+double SystemConfig::get(SystemConfigType type) {
+    switch (type) {
+        case SystemConfigType::screenWidth: {
+            return this->screenWidth;
+        }
+        case SystemConfigType::screenHeight: {
+            return this->screenHeight;
+        }
+        case SystemConfigType::targetMainMillis: {
+            return this->targetMainMillis;
+        }
+        case SystemConfigType::targetRenderMillis: {
+            return this->targetMainMillis;
+        }
+        case SystemConfigType::currentMillis: {
+            return new millis() - this->startMillis;
+        }
+        case SystemConfigType::isZigZag: {
+            return this->layoutIsZigZag ? 1 : 0;
+        }
+    }
+}
 
 SystemConfig::SystemConfig(
     unsigned short int screenWidth,
     unsigned short int screenHeight,
-    unsigned short int minMillisPerFrame,
+    unsigned short int targetMainMillis,
+    unsigned short int targetRenderMillis,
+    unsigned long int currentMillis,
     bool layoutIsZigZag,
     unsigned int wireClock,
     unsigned short int newGamePollingInterval,
@@ -38,11 +91,6 @@ SystemConfig::SystemConfig(
     this->analogInputPin = analogInputPin;
     this->analogMaxValue = analogMaxValue;
 
-    expandedProperties[0] = screenWidth;
-    expandedProperties[1] = screenHeight;
-    expandedProperties[2] = minMillisPerFrame;
-    expandedProperties[3] = layoutIsZigZag;
-
     analogValueModifier = (1 << 21) / analogMaxValue;
 
     pinMode(this->regShiftLoadPin, OUTPUT);
@@ -53,44 +101,13 @@ SystemConfig::SystemConfig(
     digitalWrite(this->regClockInputPin, LOW);
     digitalWrite(this->regShiftLoadPin, HIGH);
     for(unsigned char i = 0; i < this->regDataWidth ; i++) {
-      digitalInputValues.insert(std::pair<unsigned char, bool>(i, false)); 
+    digitalInputValues.insert(std::pair<unsigned char, bool>(i, false)); 
     }
     for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
-      analogInputValues.insert(std::pair<unsigned char, unsigned short int>(i, 512)); 
+    analogInputValues.insert(std::pair<unsigned char, unsigned short int>(i, 512)); 
     }
 
     for ( auto &pin : *this->analogSignalPins ) {
-      pinMode(pin, OUTPUT);
+    pinMode(pin, OUTPUT);
     }
-};
-
-void SystemConfig::fetchInputValues() {
-  digitalWrite(this->regClockInihibitPin, HIGH);
-  digitalWrite(this->regShiftLoadPin, LOW);
-  delayMicroseconds(5);
-  digitalWrite(this->regShiftLoadPin, HIGH);
-  digitalWrite(this->regClockInihibitPin, LOW);
-
-  for(unsigned char i = 0; i < this->regDataWidth ; i++) {
-    digitalInputValues[i] = digitalRead(this->regSerialOutputPin);
-    digitalWrite(this->regClockInputPin, HIGH);
-    delayMicroseconds(5);
-    digitalWrite(this->regClockInputPin, LOW);
-  }
-
-  for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
-    unsigned char index = 0;
-    for ( auto &pin : *this->analogSignalPins ) {
-      digitalWrite(pin, (i >> index) & 0b1);
-      index++;
-    }
-    unsigned short readValue = analogRead(this->analogInputPin);
-    if(readValue > this->analogMaxValue) {
-      analogInputValues[i] = 1023;
-    } else {
-      analogInputValues[i] =(((unsigned int)readValue << 11) * analogValueModifier) >> 22;
-    }
-
-  }
-
-};
+}

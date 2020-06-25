@@ -1,12 +1,23 @@
 #pragma once
 #define SystemConfig_h
-#include "ArcadableLib.h"
+#include <Arcadable.h>
+
+enum SystemConfigType {
+    screenWidth,
+    screenHeight,
+    targetMainMillis,
+    targetRenderMillis,
+    currentMillis,
+    isZigZag
+}
 
 class SystemConfig {
     public:
         unsigned short int screenWidth;
         unsigned short int screenHeight;
-        unsigned short int minMillisPerFrame;
+        unsigned short int targetMainMillis;
+        unsigned short int targetRenderMillis;
+        unsigned long int startMillis;
         bool layoutIsZigZag;
         unsigned int wireClock;
         unsigned short int newGamePollingInterval;
@@ -22,13 +33,15 @@ class SystemConfig {
         unsigned short int analogMaxValue;
         unsigned int analogValueModifier;
         std::vector<unsigned char> *analogSignalPins;
-        unsigned int expandedProperties[4];
         std::map<unsigned char, bool> digitalInputValues;
         std::map<unsigned char, unsigned short int> analogInputValues;
+        SystemConfig();
         SystemConfig(
             unsigned short int screenWidth,
             unsigned short int screenHeight,
-            unsigned short int minMillisPerFrame,
+            unsigned short int targetMainMillis,
+            unsigned short int targetRenderMillis,
+            unsigned long int startMillis,
             bool layoutIsZigZag,
             unsigned int wireClock,
             unsigned short int newGamePollingInterval,
@@ -46,4 +59,6 @@ class SystemConfig {
         );
 
         void fetchInputValues();
+
+        long get(SystemConfigType type);
 };
