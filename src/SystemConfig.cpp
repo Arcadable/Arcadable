@@ -1,32 +1,32 @@
 #include "SystemConfig.h"
 
 void SystemConfig::fetchInputValues() {
-digitalWrite(this->regClockInihibitPin, HIGH);
-digitalWrite(this->regShiftLoadPin, LOW);
-delayMicroseconds(5);
-digitalWrite(this->regShiftLoadPin, HIGH);
-digitalWrite(this->regClockInihibitPin, LOW);
-
-for(unsigned char i = 0; i < this->regDataWidth ; i++) {
-    digitalInputValues[i] = digitalRead(this->regSerialOutputPin);
-    digitalWrite(this->regClockInputPin, HIGH);
+    digitalWrite(this->regClockInihibitPin, HIGH);
+    digitalWrite(this->regShiftLoadPin, LOW);
     delayMicroseconds(5);
-    digitalWrite(this->regClockInputPin, LOW);
-}
+    digitalWrite(this->regShiftLoadPin, HIGH);
+    digitalWrite(this->regClockInihibitPin, LOW);
 
-for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
-    unsigned char index = 0;
-    for ( auto &pin : *this->analogSignalPins ) {
-    digitalWrite(pin, (i >> index) & 0b1);
-    index++;
+    for(unsigned char i = 0; i < this->regDataWidth ; i++) {
+        digitalInputValues[i] = digitalRead(this->regSerialOutputPin);
+        digitalWrite(this->regClockInputPin, HIGH);
+        delayMicroseconds(5);
+        digitalWrite(this->regClockInputPin, LOW);
     }
-    unsigned short readValue = analogRead(this->analogInputPin);
-    if(readValue > this->analogMaxValue) {
-    analogInputValues[i] = 1023;
-    } else {
-    analogInputValues[i] =(((unsigned int)readValue << 11) * analogValueModifier) >> 22;
+
+    for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
+        unsigned char index = 0;
+        for ( auto &pin : *this->analogSignalPins ) {
+            digitalWrite(pin, (i >> index) & 0b1);
+            index++;
+        }
+        unsigned short readValue = analogRead(this->analogInputPin);
+        if(readValue > this->analogMaxValue) {
+            analogInputValues[i] = 1023;
+        } else {
+            analogInputValues[i] =(((unsigned int)readValue << 11) * analogValueModifier) >> 22;
+        }
     }
-}
 };
 
 double SystemConfig::get(SystemConfigType type) {
@@ -44,11 +44,12 @@ double SystemConfig::get(SystemConfigType type) {
             return this->targetMainMillis;
         }
         case SystemConfigType::currentMillis: {
-            return new millis() - this->startMillis;
+            return millis() - this->startMillis;
         }
         case SystemConfigType::isZigZag: {
-            return this->layoutIsZigZag ? 1 : 0;
+            return this->layoutIsZigZag ? (double)1 : (double)0;
         }
+        default: return 0;
     }
 }
 
@@ -57,7 +58,7 @@ SystemConfig::SystemConfig(
     unsigned short int screenHeight,
     unsigned short int targetMainMillis,
     unsigned short int targetRenderMillis,
-    unsigned long int currentMillis,
+    unsigned long int startMillis,
     bool layoutIsZigZag,
     unsigned int wireClock,
     unsigned short int newGamePollingInterval,
@@ -75,7 +76,9 @@ SystemConfig::SystemConfig(
 ) {
     this->screenWidth = screenWidth;
     this->screenHeight = screenHeight;
-    this->minMillisPerFrame = minMillisPerFrame;
+    this->targetMainMillis = targetMainMillis;
+    this->targetRenderMillis = targetRenderMillis;
+    this->startMillis = startMillis;
     this->layoutIsZigZag = layoutIsZigZag;
     this->wireClock = wireClock;
     this->newGamePollingInterval = newGamePollingInterval;
@@ -101,13 +104,13 @@ SystemConfig::SystemConfig(
     digitalWrite(this->regClockInputPin, LOW);
     digitalWrite(this->regShiftLoadPin, HIGH);
     for(unsigned char i = 0; i < this->regDataWidth ; i++) {
-    digitalInputValues.insert(std::pair<unsigned char, bool>(i, false)); 
+        digitalInputValues.insert(std::pair<unsigned char, bool>(i, false)); 
     }
     for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
-    analogInputValues.insert(std::pair<unsigned char, unsigned short int>(i, 512)); 
+        analogInputValues.insert(std::pair<unsigned char, unsigned short int>(i, 512)); 
     }
 
     for ( auto &pin : *this->analogSignalPins ) {
-    pinMode(pin, OUTPUT);
+        pinMode(pin, OUTPUT);
     }
 }

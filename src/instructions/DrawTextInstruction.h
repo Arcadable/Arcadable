@@ -1,22 +1,21 @@
 #pragma once
 #define DrawTextInstruction_h
-#include <Arcadable.h>
+#include <instructions/Instruction.h>
+#include <values/Value.h>
+#include <vector>
 
 class DrawTextInstruction: public Instruction {
 	public:
-        NumberValueTypePointer<NumberValueType> colorValue;
-        NumberValueTypePointer<NumberValueType> scaleValue;
-        ValueArrayValueTypePointer<TextValue<NumberValueType>> textValue;
-        NumberValueTypePointer<NumberValueType> xValue;
-        NumberValueTypePointer<NumberValueType> yValue;
+        Value* colorValue;
+        Value* scaleValue;
+        Value* textValue;
+        Value* xValue;
+        Value* yValue;
         void execute();
         DrawTextInstruction();
         DrawTextInstruction(
-            unsigned short ID,
-            NumberValueTypePointer<NumberValueType> colorValue,
-            NumberValueTypePointer<NumberValueType> scaleValue,
-            ValueArrayValueTypePointer<TextValue<NumberValueType>> textValue,
-            NumberValueTypePointer<NumberValueType> xValue,
-            NumberValueTypePointer<NumberValueType> yValue
+            unsigned short ID
         );
+        void init(std::vector<unsigned short> ids);
+
 };

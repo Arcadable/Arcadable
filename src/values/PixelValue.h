@@ -1,19 +1,21 @@
 #pragma once
 #define PixelValue_h
-#include <Arcadable.h>
+#include <values/Value.h>
+#include <vector>
 
-class PixelValue: public NumberValueType {
+class PixelValue: public Value {
 	public:
-        NumberValueTypePointer<NumberValueType> XCalc;
-        NumberValueTypePointer<NumberValueType> YCalc;
+        Value* XCalc;
+        Value* YCalc;
 
-        double get();
-        void set(double newValue);
+        double getNumber();
+        void setNumber(double newValue);
+        std::vector<unsigned short>* getValueArray();
+        void setValueArray(std::vector<unsigned short> newValue);
 		bool isTruthy();
+        void init(std::vector<unsigned short> ids);
         PixelValue();
         PixelValue(
-            unsigned short ID,
-            NumberValueTypePointer<NumberValueType> XCalc,
-            NumberValueTypePointer<NumberValueType> YCalc
+            unsigned short ID
         );
 };

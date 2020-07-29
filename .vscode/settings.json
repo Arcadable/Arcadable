@@ -42,6 +42,9 @@
         "cstring": "cpp",
         "iostream": "cpp",
         "cinttypes": "cpp",
-        "any": "cpp"
-    }
+        "any": "cpp",
+        "random": "cpp"
+    },
+    "C_Cpp.loggingLevel": "Debug",
+    "C_Cpp.errorSquiggles": "Enabled"
 }

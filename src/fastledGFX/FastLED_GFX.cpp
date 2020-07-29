@@ -38,6 +38,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
+#include "Arcadable.h"
 #include <FastLED.h>
 #include "FastLED_GFX.h"
 #include "glcdfont.c"
@@ -922,13 +923,10 @@ boolean FastLED_GFX_Button::justReleased() { return (!currstate && laststate); }
 // GFXcanvas requires 2 bytes per pixel (no scanline pad).
 // NOT EXTENSIVELY TESTED YET.  MAY CONTAIN WORST BUGS KNOWN TO HUMANKIND.
 
-GFXcanvas::GFXcanvas(uint16_t w, uint16_t h) : FastLED_GFX(w, h) {
-  game = Arcadable::getInstance();
-}
+GFXcanvas::GFXcanvas(uint16_t w, uint16_t h) : FastLED_GFX(w, h) { }
 
 
-GFXcanvas::~GFXcanvas(void) {
-}
+GFXcanvas::~GFXcanvas(void) { }
 
 void GFXcanvas::drawPixel(int16_t x, int16_t y, CRGB color) {
   if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
@@ -949,10 +947,10 @@ void GFXcanvas::drawPixel(int16_t x, int16_t y, CRGB color) {
     y = HEIGHT - 1 - t;
     break;
   }
-  game->pixelsBuffer[x + y * WIDTH] = color;
+  Arcadable::getInstance()->pixelsBuffer[x + y * WIDTH] = color;
 }
 
 void GFXcanvas::fillScreen(CRGB color) {
   uint16_t i, pixels = WIDTH * HEIGHT;
-  for(i=0; i<pixels; i++) game->pixelsBuffer[i] = color;
+  for(i=0; i<pixels; i++) Arcadable::getInstance()->pixelsBuffer[i] = color;
 }

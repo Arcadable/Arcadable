@@ -1,6 +1,7 @@
 #pragma once
 #define EvaluationValue_h
-#include <Arcadable.h>
+#include <values/Value.h>
+#include <vector>
 
 enum EvaluationOperator {
   add,
@@ -13,32 +14,34 @@ enum EvaluationOperator {
   b_xor,
   lsh,
   rsh,
-  pow,
+  poww,
   eq,
   ne,
   gt,
   lt,
   ge,
   le
-}
+};
 
-class EvaluationValue: public NumberValueType {
+class EvaluationValue: public Value {
 	public:
-    NumberValueTypePointer<NumberValueType> left;
-    NumberValueTypePointer<NumberValueType> right;
+    Value* left;
+    Value* right;
     EvaluationOperator evaluationOperator;
     bool isStatic;
 
-    double get();
-    void set(double newValue);
+    double getNumber();
+    void setNumber(double newValue);
+    std::vector<unsigned short>* getValueArray();
+    void setValueArray(std::vector<unsigned short> newValue);
     bool isTruthy();
-    PixelValue();
-    PixelValue(
+    void init(std::vector<unsigned short> ids);
+    
+    EvaluationValue();
+    EvaluationValue(
         unsigned short ID,
-        NumberValueTypePointer<NumberValueType> left,
-        NumberValueTypePointer<NumberValueType> right,
         EvaluationOperator evaluationOperator,
-        boolean isStatic
+        bool isStatic
     );
   private:
     double _STATIC_RESULT;

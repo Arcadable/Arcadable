@@ -16,7 +16,14 @@
             "intelliSenseMode": "clang-x64",
             "forcedInclude": [
                 "/home/niek/.arduino15/packages/arduino/hardware/avr/1.8.2/cores/arduino/Arduino.h"
-            ]
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
         }
     ],
     "version": 4

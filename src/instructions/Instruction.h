@@ -1,8 +1,8 @@
 #pragma once
-#define struction_h
-#include <Arcadable.h>
+#define Instruction_h
+#include <vector>
 
-enum structionType {
+enum InstructionType {
     MutateValue,
     RunCondition,
     DrawPixel,
@@ -20,27 +20,17 @@ enum structionType {
 	DebugLog
 };
 
-class Instruction: public LogicElement {
+class Instruction {
     public:
         InstructionType type;
+        unsigned short ID;
         
         virtual void execute();
+        virtual void init(std::vector<unsigned short> ids);
         Instruction();
         Instruction(
             unsigned short ID,
             InstructionType type
         );
 
-};
-
-class InstructionPointer {
-	public:
-		unsigned short ID;
-		Arcadable *game;
-		void execute();
-
-        InstructionPointer();
-        InstructionPointer(
-            unsigned short ID
-        );
 };

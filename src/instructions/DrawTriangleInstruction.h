@@ -1,26 +1,23 @@
 #pragma once
 #define DrawTriangleInstruction_h
-#include <Arcadable.h>
+#include <instructions/Instruction.h>
+#include <values/Value.h>
+#include <vector>
 
 class DrawTriangleInstruction: public Instruction {
 	public:
-        NumberValueTypePointer<NumberValueType> colorValue;
-        NumberValueTypePointer<NumberValueType> x1Value;
-        NumberValueTypePointer<NumberValueType> y1Value;
-        NumberValueTypePointer<NumberValueType> x2Value;
-        NumberValueTypePointer<NumberValueType> y2Value;
-        NumberValueTypePointer<NumberValueType> x3Value;
-        NumberValueTypePointer<NumberValueType> y3Value;
+        Value* colorValue;
+        Value* x1Value;
+        Value* y1Value;
+        Value* x2Value;
+        Value* y2Value;
+        Value* x3Value;
+        Value* y3Value;
         void execute();
         DrawTriangleInstruction();
         DrawTriangleInstruction(
-            unsigned short ID,
-            NumberValueTypePointer<NumberValueType> colorValue,
-            NumberValueTypePointer<NumberValueType> x1Value,
-            NumberValueTypePointer<NumberValueType> y1Value,
-            NumberValueTypePointer<NumberValueType> x2Value,
-            NumberValueTypePointer<NumberValueType> y2Value,
-            NumberValueTypePointer<NumberValueType> x3Value,
-            NumberValueTypePointer<NumberValueType> y3Value
+            unsigned short ID
         );
+        void init(std::vector<unsigned short> ids);
+
 };

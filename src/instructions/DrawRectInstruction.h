@@ -1,22 +1,21 @@
 #pragma once
 #define DrawRectInstruction_h
-#include <Arcadable.h>
+#include <instructions/Instruction.h>
+#include <values/Value.h>
+#include <vector>
 
 class DrawRectInstruction: public Instruction {
 	public:
-        NumberValueTypePointer<NumberValueType> colorValue;
-        NumberValueTypePointer<NumberValueType> x1Value;
-        NumberValueTypePointer<NumberValueType> y1Value;
-        NumberValueTypePointer<NumberValueType> x2Value;
-        NumberValueTypePointer<NumberValueType> y2Value;
+        Value* colorValue;
+        Value* x1Value;
+        Value* y1Value;
+        Value* x2Value;
+        Value* y2Value;
         void execute();
         DrawRectInstruction();
         DrawRectInstruction(
-            unsigned short ID,
-            NumberValueTypePointer<NumberValueType> colorValue,
-            NumberValueTypePointer<NumberValueType> x1Value,
-            NumberValueTypePointer<NumberValueType> y1Value,
-            NumberValueTypePointer<NumberValueType> x2Value,
-            NumberValueTypePointer<NumberValueType> y2Value
+            unsigned short ID
         );
+        void init(std::vector<unsigned short> ids);
+
 };

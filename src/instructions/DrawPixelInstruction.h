@@ -1,18 +1,19 @@
 #pragma once
 #define DrawPixelInstruction_h
-#include <Arcadable.h>
+#include <instructions/Instruction.h>
+#include <values/Value.h>
+#include <vector>
 
 class DrawPixelInstruction: public Instruction {
 	public:
-        NumberValueTypePointer<NumberValueType> colorValue;
-        NumberValueTypePointer<NumberValueType> xValue;
-        NumberValueTypePointer<NumberValueType> yValue;
+        Value* colorValue;
+        Value* xValue;
+        Value* yValue;
         void execute();
         DrawPixelInstruction();
         DrawPixelInstruction(
-            unsigned short ID,
-            NumberValueTypePointer<NumberValueType> colorValue,
-            NumberValueTypePointer<NumberValueType> xValue,
-            NumberValueTypePointer<NumberValueType> yValue
+            unsigned short ID
         );
+        void init(std::vector<unsigned short> ids);
+
 };

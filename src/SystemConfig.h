@@ -1,6 +1,8 @@
 #pragma once
 #define SystemConfig_h
-#include <Arcadable.h>
+#include <map>
+#include <vector>
+#include "Arduino.h"
 
 enum SystemConfigType {
     screenWidth,
@@ -9,7 +11,7 @@ enum SystemConfigType {
     targetRenderMillis,
     currentMillis,
     isZigZag
-}
+};
 
 class SystemConfig {
     public:
@@ -60,5 +62,5 @@ class SystemConfig {
 
         void fetchInputValues();
 
-        long get(SystemConfigType type);
+        double get(SystemConfigType type);
 };

@@ -1,7 +1,8 @@
 #pragma once
 #define Value_h
-#include <Arcadable.h>
-
+class ValuePointer;
+#include <vector>
+#include <values/Value.h>
 enum ValueType {
 
     number,
@@ -15,17 +16,22 @@ enum ValueType {
     evaluation
 };
 
-class Value: public LogicElement {
+
+class Value {
     public:
         ValueType type;
-        
-        virtual template <typename T> T get();
-        virtual template <typename T> void set(T newValue);
+        unsigned short ID;
+        bool isNumberType;
+        std::vector<unsigned short> emptyArray;
+        virtual double getNumber();
+        virtual void setNumber(double newValue);
+        virtual std::vector<unsigned short>* getValueArray();
+        virtual void setValueArray(std::vector<unsigned short> newValue);
 		virtual bool isTruthy();
+        virtual void init(std::vector<unsigned short> ids);
         Value();
         Value(
             unsigned short ID,
             ValueType type
         );
-
 };

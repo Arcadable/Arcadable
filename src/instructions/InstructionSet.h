@@ -1,30 +1,22 @@
 #pragma once
 #define InstructionSet_h
-#include <Arcadable.h>
+#include <vector>
+#include <instructions/Instruction.h>
 
-class InstructionSet: public LogicElement {
+class InstructionSet {
     public:
-        InstructionType type;
-        std::vector<InstructionPointer> instructions;
+        unsigned short size;
+        std::vector<unsigned short> instructions;
+        
+        unsigned short ID;
 
         void execute();
         InstructionSet();
         InstructionSet(
             unsigned short ID,
-            unsigned short size,
-            std::vector<InstructionPointer> instructions
+            unsigned short size
         );
+        void init(std::vector<unsigned short> ids);
 
-};
 
-class InstructionSetPointer {
-	public:
-		unsigned short ID;
-		Arcadable *game;
-		void execute();
-
-        InstructionSetPointer();
-        InstructionSetPointer(
-            unsigned short ID
-        );
 };

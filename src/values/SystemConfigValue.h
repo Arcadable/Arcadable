@@ -1,17 +1,22 @@
 #pragma once
 #define SystemConfigValue_h
-#include <Arcadable.h>
-
-class SystemConfigValue: public NumberValueType {
+#include <SystemConfig.h>
+#include <values/Value.h>
+#include <vector>
+class SystemConfigValue: public Value {
 	public:
-        SystemConfigValue configType;
+        SystemConfigType configType;
 
-        double get();
-        void set(double newValue);
+        double getNumber();
+        void setNumber(double newValue);
+        std::vector<unsigned short>* getValueArray();
+        void setValueArray(std::vector<unsigned short> newValue);
+        void init(std::vector<unsigned short> ids);
+
 		bool isTruthy();
         SystemConfigValue();
         SystemConfigValue(
             unsigned short ID,
-            SystemConfigValue configType
+            SystemConfigType configType
         );
 };

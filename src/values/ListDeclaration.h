@@ -1,19 +1,25 @@
 #pragma once
 #define ListDeclaration_h
-#include <Arcadable.h>
+#include <vector>
+#include <values/Value.h>
 
-template <typename T> 
-class ListDeclaration: public ValueArrayValueType {
+class ListDeclaration: public Value {
 	public:
-        std::vector<ValuePointer<T>> values;
-
-        std::vector<ValuePointer<T>> get();
-        void set(std::vector<ValuePointer<T>> newValue);
+        unsigned short size;
+        std::vector<unsigned short> values;
+        std::vector<unsigned short> ids;
+        double getNumber();
+        void setNumber(double newValue);
+        std::vector<unsigned short>* getValueArray();
+        void setValueArray(std::vector<unsigned short> newValue);
 		bool isTruthy();
+        void init(std::vector<unsigned short> ids);
         ListDeclaration();
         ListDeclaration(
             unsigned short ID,
-            unsigned short size,
-            std::vector<ValuePointer<T>> values
+            unsigned short size
         );
 };
+
+
+

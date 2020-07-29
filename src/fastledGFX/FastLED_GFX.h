@@ -12,7 +12,6 @@ date:      2016/04/27
 #include "Arduino.h"
 #include "Print.h"
 #include "gfxfont.h"
-#include "ArcadableLib.h"
 
 #define adagfxswap(a, b) { a = a ^ b; b = a ^ b; a = a ^ b; }
 
@@ -141,7 +140,6 @@ public:
   void fillScreen(CRGB color);
   struct CRGB *getBuffer(void);
   struct CRGB *m_LED;
-  Arcadable *game;
 };
 
 #endif // _FASTLED_GFX_H
