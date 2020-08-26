@@ -13,7 +13,6 @@
 #include <FastLED.h>
 #include <Wire.h>
 
-
 #include "SystemConfig.h"
 #include "values/Value.h"
 #include "instructions/Instruction.h"
@@ -92,22 +91,26 @@ class Arcadable {
 			CRGB *pixelsBuffer,
 			GFXcanvas* canvas
 		);
-		void step();
-
+		void mainStep();
+		void renderStep();
+		void poll();
+		void refresh();
 
 
 	private:
 		static Arcadable *_instance;
-		unsigned int _prevMainMillis;
-        unsigned int _prevRenderMillis;
-		unsigned int _prevWireMillis;
 		bool _gameLoaded = false;
 		bool _readyToLoad = true;
 		bool _pollImmediately = false;
 		bool _refresh = false;
+		IntervalTimer _mainTimer;
+		IntervalTimer _renderTimer;
+		IntervalTimer _pollTimer;
 
-		void _mainStep();
-		void _renderStep();
+		static void _mainTrigger();
+		static void _renderTrigger();
+		static void _pollTrigger();
+		void _startLoadGameLogic();
 		void _unloadGameLogic();
 		void _readAndLoadGameLogic();
 		void _readEEPROM(

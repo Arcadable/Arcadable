@@ -1,5 +1,7 @@
 #include "Arduino.h"
 #include "Arcadable.h"
+
+
 Arcadable *Arcadable::_instance = NULL;
 Arcadable *Arcadable::getInstance() {
 	if (!_instance)
@@ -8,6 +10,16 @@ Arcadable *Arcadable::getInstance() {
     }
 
     return _instance;
+}
+
+void Arcadable::_mainTrigger() {
+    Arcadable::getInstance()->mainStep();
+}
+void Arcadable::_renderTrigger() {
+    Arcadable::getInstance()->renderStep();
+}
+void Arcadable::_pollTrigger() {
+    Arcadable::getInstance()->poll();
 }
 
 void Arcadable::setup(
@@ -26,106 +38,86 @@ void Arcadable::setup(
 	}
 	Wire.begin();
  	Wire.setClock(systemConfig->wireClock);
+
+    _mainTimer.begin(_mainTrigger, systemConfig->targetMainMillis * 1000);
+    _renderTimer.begin(_renderTrigger, systemConfig->targetRenderMillis * 1000);
+    _pollTimer.begin(_pollTrigger, 1000000);
+    _pollTimer.priority(0);
+    _mainTimer.priority(1);
+    _renderTimer.priority(2);
 }
-void Arcadable::step() {
-	unsigned int currentMillis = millis();
-	if(_pollImmediately || (currentMillis - _prevWireMillis > systemConfig->newGamePollingInterval)) {
-		if (_pollImmediately) {
-			_pollImmediately = false;
-		}
-		Wire.beginTransmission(systemConfig->eepromAddress);
-		Wire.write(0);
-		Wire.write(0);
-		Wire.endTransmission();
-		Wire.requestFrom(static_cast<unsigned int>(systemConfig->eepromAddress), 1);
-		delay(1);
-		if(_readyToLoad && Wire.available() == 1) {
-			if(_gameLoaded) {
-				_unloadGameLogic();
-				_gameLoaded = false;
-				_pollImmediately = true;
-			} else {
-				_readAndLoadGameLogic();
-				_gameLoaded = true;
-				_readyToLoad = false;
-			}
-		} else if(Wire.available() == 0) {
-			_readyToLoad = true;
-		}
 
-		_prevWireMillis = millis();
-	}
-	if (_gameLoaded) {
-		if (currentMillis - _prevMainMillis >= systemConfig->targetMainMillis) {
-                                Serial.print("Main:   ");            Serial.println(currentMillis - _prevMainMillis);
 
-			_mainStep();
-            _prevMainMillis = millis();
-		}
-		if (currentMillis - _prevRenderMillis >= systemConfig->targetRenderMillis) {
-
-                    Serial.print("Render: "); Serial.println(currentMillis - _prevRenderMillis);
-            _refresh = true;
-			_renderStep();
-            _prevRenderMillis = millis();
-		}
-	} else {
-		if(!_pollImmediately) {
-			canvas->setTextColor(0xffffff);
-			canvas->setTextSize(1);
-			canvas->setTextWrap(false);
-			canvas->fillScreen(CRGB::Black);
-
-			canvas->setCursor(systemConfig->screenWidth / 2 - 18, systemConfig->screenHeight / 2 - 10);
-			canvas->print("Insert");
-
-			canvas->setCursor(systemConfig->screenWidth / 2 - 12, systemConfig->screenHeight / 2 + 2);
-			canvas->print("Card");
-			delay(systemConfig->targetRenderMillis);
-		} else {
-			canvas->fillScreen(CRGB::Black);
-			canvas->drawRect(systemConfig->screenWidth / 2 - 5, systemConfig->screenHeight / 2 - 2, 4, 4, CRGB::White);
-			canvas->drawRect(systemConfig->screenWidth / 2 + 2, systemConfig->screenHeight / 2 - 1, 2, 2, CRGB::White);
-			delay(systemConfig->targetRenderMillis);
-		}
-	}
-
-	if(systemConfig->layoutIsZigZag) {
-		for(unsigned short int column = 0; column < systemConfig->screenWidth; column++) {
-			if (column % 2 == 1) {
-				CRGB tempLeds[systemConfig->screenHeight];
-				for (int row = 0; row < systemConfig->screenHeight; row++) {
-					tempLeds[(systemConfig->screenHeight - 1) - row] = pixelsBuffer[column * systemConfig->screenWidth + row];  
-				}
-				for (int row = 0; row < systemConfig->screenHeight; row++) {
-					pixels[column * systemConfig->screenWidth + row] = tempLeds[row];  
-				}
-			} else {
-				for (int row = 0; row < systemConfig->screenHeight; row++) {
-					pixels[column * systemConfig->screenWidth + row] = pixelsBuffer[column * systemConfig->screenWidth + row];  
-				}
-			}
-		}
-	} else {
-		for(unsigned short int index = 0; index < systemConfig->screenWidth * systemConfig->screenHeight; index++) {
-			pixels[index] = pixelsBuffer[index];  
-		}
-	}
-
-    if (!_gameLoaded || (_gameLoaded && _refresh)) {
-	    FastLED.show();
-        _refresh = false;
+void Arcadable::poll() {
+    Wire.beginTransmission(systemConfig->eepromAddress);
+    Wire.write(0);
+    Wire.write(0);
+    Wire.endTransmission();
+    Wire.requestFrom(static_cast<unsigned int>(systemConfig->eepromAddress), 1);
+    delay(1);
+    if(_readyToLoad && Wire.available() == 1) {
+        if(_gameLoaded) {
+            _unloadGameLogic();
+        }
+        _readAndLoadGameLogic();
+        _readyToLoad = false;
+        _gameLoaded = true;
+    } else if(Wire.available() == 0) {
+        _readyToLoad = true;
     }
 
 }
 
-void Arcadable::_mainStep() {
-	systemConfig->fetchInputValues();
-    this->mainInstructionSet->execute();
+void Arcadable::mainStep() {
+
+    if(_gameLoaded) {
+
+        systemConfig->fetchInputValues();
+        mainInstructionSet->execute();
+    }
+
 }
 
-void Arcadable::_renderStep() {
-    this->renderInstructionSet->execute();
+void Arcadable::renderStep() {
+
+    if(_gameLoaded) {
+        Arcadable::getInstance()->renderInstructionSet->execute();
+    } else {
+        canvas->setTextColor(0xffffff);
+        canvas->setTextSize(1);
+        canvas->setTextWrap(false);
+        canvas->fillScreen(CRGB::Black);
+
+        canvas->setCursor(systemConfig->screenWidth / 2 - 18, systemConfig->screenHeight / 2 - 10);
+        canvas->print("Insert");
+
+        canvas->setCursor(systemConfig->screenWidth / 2 - 12, systemConfig->screenHeight / 2 + 2);
+        canvas->print("Card");
+    }
+     
+    if(systemConfig->layoutIsZigZag) {
+        for(unsigned short int column = 0; column < systemConfig->screenWidth; column++) {
+            if (column % 2 == 1) {
+                CRGB tempLeds[systemConfig->screenHeight];
+                for (int row = 0; row < systemConfig->screenHeight; row++) {
+                    tempLeds[(systemConfig->screenHeight - 1) - row] = pixelsBuffer[column * systemConfig->screenWidth + row];  
+                }
+                for (int row = 0; row < systemConfig->screenHeight; row++) {
+                    pixels[column * systemConfig->screenWidth + row] = tempLeds[row];  
+                }
+            } else {
+                for (int row = 0; row < systemConfig->screenHeight; row++) {
+                    pixels[column * systemConfig->screenWidth + row] = pixelsBuffer[column * systemConfig->screenWidth + row];  
+                }
+            }
+        }
+    } else {
+        for(unsigned short int index = 0; index < systemConfig->screenWidth * systemConfig->screenHeight; index++) {
+            pixels[index] = pixelsBuffer[index];  
+        }
+    }
+    FastLED.show();
+
 };
 
 
