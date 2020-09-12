@@ -42,9 +42,9 @@ void Arcadable::setup(
     _mainTimer.begin(_mainTrigger, systemConfig->targetMainMillis * 1000);
     _renderTimer.begin(_renderTrigger, systemConfig->targetRenderMillis * 1000);
     _pollTimer.begin(_pollTrigger, 1000000);
-    _pollTimer.priority(0);
-    _mainTimer.priority(1);
-    _renderTimer.priority(2);
+    _pollTimer.priority(128);
+    _mainTimer.priority(129);
+    _renderTimer.priority(130);
 }
 
 
