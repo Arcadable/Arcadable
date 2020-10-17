@@ -6,16 +6,16 @@ void SystemConfig::fetchInputValues() {
     delayMicroseconds(5);
     digitalWrite(this->regShiftLoadPin, HIGH);
     digitalWrite(this->regClockInihibitPin, LOW);
-  //  Serial.println("Digital: ");
+   // Serial.println("Digital: ");
 
     for(unsigned char i = 0; i < this->regDataWidth ; i++) {
         digitalInputValues[i] = digitalRead(this->regSerialOutputPin);
         digitalWrite(this->regClockInputPin, HIGH);
         delayMicroseconds(5);
         digitalWrite(this->regClockInputPin, LOW);
-       // Serial.print(i); Serial.print(": "); Serial.println(digitalInputValues[i]);
+      //  Serial.print(i); Serial.print(": "); Serial.println(digitalInputValues[i]);
     }
-   // Serial.println("Analog: ");
+    //Serial.println("Analog: ");
 
     for(unsigned char i = 0; i < this->numAnalogInputs ; i++) {
         unsigned char index = 0;
@@ -29,10 +29,10 @@ void SystemConfig::fetchInputValues() {
         } else {
             analogInputValues[i] =(((unsigned int)readValue << 11) * analogValueModifier) >> 22;
         }
-     //   Serial.print(i); Serial.print(": "); Serial.println(analogInputValues[i]);
+      //  Serial.print(i); Serial.print(": "); Serial.println(analogInputValues[i]);
 
     }
- //   Serial.println("-----------------------------");
+  //  Serial.println("-----------------------------");
 };
 
 double SystemConfig::get(SystemConfigType type) {

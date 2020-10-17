@@ -41,7 +41,7 @@ void Arcadable::setup(
 
     _mainTimer.begin(_mainTrigger, systemConfig->targetMainMillis * 1000);
     _renderTimer.begin(_renderTrigger, systemConfig->targetRenderMillis * 1000);
-    _pollTimer.begin(_pollTrigger, 1000000);
+    _pollTimer.begin(_pollTrigger, 300000);
     _pollTimer.priority(128);
     _mainTimer.priority(129);
     _renderTimer.priority(130);
@@ -49,19 +49,29 @@ void Arcadable::setup(
 
 
 void Arcadable::poll() {
+    Serial.println("poll");
     Wire.beginTransmission(systemConfig->eepromAddress);
     Wire.write(0);
     Wire.write(0);
     Wire.endTransmission();
     Wire.requestFrom(static_cast<unsigned int>(systemConfig->eepromAddress), 1);
-    delay(1);
+    delayMicroseconds(100);
     if(_readyToLoad && Wire.available() == 1) {
+        _loading = true;
+        renderStep();
+
         if(_gameLoaded) {
             _unloadGameLogic();
         }
-        _readAndLoadGameLogic();
+        bool readRes = _readAndLoadGameLogic();
         _readyToLoad = false;
-        _gameLoaded = true;
+        if (readRes) {
+            _gameLoaded = true;
+        } else {
+            _gameLoaded = false;
+        }
+        _loading = false;
+        renderStep();
     } else if(Wire.available() == 0) {
         _readyToLoad = true;
     }
@@ -69,8 +79,9 @@ void Arcadable::poll() {
 }
 
 void Arcadable::mainStep() {
+    Serial.println("main");
 
-    if(_gameLoaded) {
+    if(_gameLoaded && !_loading) {
 
         systemConfig->fetchInputValues();
         mainInstructionSet->execute();
@@ -79,10 +90,11 @@ void Arcadable::mainStep() {
 }
 
 void Arcadable::renderStep() {
+    Serial.println("render");
 
-    if(_gameLoaded) {
+    if(_gameLoaded && !_loading) {
         Arcadable::getInstance()->renderInstructionSet->execute();
-    } else {
+    } else if (!_loading) {
         canvas->setTextColor(0xffffff);
         canvas->setTextSize(1);
         canvas->setTextWrap(false);
@@ -93,6 +105,10 @@ void Arcadable::renderStep() {
 
         canvas->setCursor(systemConfig->screenWidth / 2 - 12, systemConfig->screenHeight / 2 + 2);
         canvas->print("Card");
+    } else {
+        canvas->fillScreen(CRGB::Black);
+        canvas->drawRect(0, 0, systemConfig->screenWidth, systemConfig->screenHeight, CRGB::White);
+
     }
      
     if(systemConfig->layoutIsZigZag) {
@@ -131,15 +147,21 @@ void Arcadable::_unloadGameLogic() {
 
 }
 
-void Arcadable::_readAndLoadGameLogic() {
+bool Arcadable::_readAndLoadGameLogic() {
 	unsigned int currentParsePosition = 0;
 	unsigned char valuesLengthData[2];
-	_readEEPROM(currentParsePosition, 2, valuesLengthData);
+	bool readRes = _readEEPROM(currentParsePosition, 2, valuesLengthData);
+    if(!readRes) {
+        return false;
+    }
 	unsigned short int valuesLength = (valuesLengthData[0] << 8) + valuesLengthData[1];
 	currentParsePosition += 2;
 
 	unsigned char valuesData[valuesLength];
-	_readEEPROM(currentParsePosition, valuesLength, valuesData);
+	readRes = _readEEPROM(currentParsePosition, valuesLength, valuesData);
+    if(!readRes) {
+        return false;
+    }
 	currentParsePosition += valuesLength;
 
     std::map<unsigned short, std::vector<unsigned short>> valueParamsMap;
@@ -261,12 +283,18 @@ void Arcadable::_readAndLoadGameLogic() {
     }
 
 	unsigned char instructionsLengthData[2];
-	_readEEPROM(currentParsePosition, 2, instructionsLengthData);
+	readRes = _readEEPROM(currentParsePosition, 2, instructionsLengthData);
+    if(!readRes) {
+        return false;
+    }
 	unsigned short int instructionsLength = (instructionsLengthData[0] << 8) + instructionsLengthData[1];
 	currentParsePosition += 2;
 
 	unsigned char instructionsData[instructionsLength];
-	_readEEPROM(currentParsePosition, instructionsLength, instructionsData);
+	readRes = _readEEPROM(currentParsePosition, instructionsLength, instructionsData);
+    if(!readRes) {
+        return false;
+    }
 	currentParsePosition += instructionsLength;
     std::map<unsigned short, std::vector<unsigned short>> instructionParamsMap;
 	for (unsigned int i = 0 ; i < sizeof(instructionsData)/sizeof(instructionsData[0]) ; i += 3) {
@@ -463,13 +491,19 @@ void Arcadable::_readAndLoadGameLogic() {
     }
 
 	unsigned char instructionSetsLengthData[2];
-	_readEEPROM(currentParsePosition, 2, instructionSetsLengthData);
+	readRes = _readEEPROM(currentParsePosition, 2, instructionSetsLengthData);
+    if(!readRes) {
+        return false;
+    }
 	unsigned short int instructionSetsLength = (instructionSetsLengthData[0] << 8) + instructionSetsLengthData[1];
 	currentParsePosition += 2;
 
 	unsigned char instructionSetsData[instructionSetsLength];
-	_readEEPROM(currentParsePosition, instructionSetsLength, instructionSetsData);
-	currentParsePosition += instructionSetsLength;
+	readRes = _readEEPROM(currentParsePosition, instructionSetsLength, instructionSetsData);
+    if(!readRes) {
+        return false;
+    }
+    currentParsePosition += instructionSetsLength;
     std::map<unsigned short, std::vector<unsigned short>> instructionSetParamsMap;
     
     bool mainSet = false;
@@ -499,40 +533,76 @@ void Arcadable::_readAndLoadGameLogic() {
         this->instructionSets[x.first].init(x.second);
     }
 	this->systemConfig->startMillis = millis();
-
+    return true;
 }
 
-void Arcadable::_readEEPROM(unsigned int startAddress, unsigned int dataLength, unsigned char *dataReceiver) {
-  unsigned int currentAddress = startAddress;
-  unsigned int currentReadIndex = 0;
-  while (currentReadIndex < dataLength) {
-    bool addressWritten = false;
-		while (!addressWritten) {
-			Wire.beginTransmission(systemConfig->eepromAddress);
-			Wire.write(currentAddress >> 8);
-			Wire.write(currentAddress & 0xFF);
-			addressWritten = Wire.endTransmission() == 0;
-		}
+bool Arcadable::_readEEPROM(unsigned int startAddress, unsigned int dataLength, unsigned char *dataReceiver) {
+    unsigned int currentAddress = startAddress;
+    unsigned int currentReadIndex = 0;
+    float good = 0;
+    float corrected = 0;
+    while (currentReadIndex < dataLength) {
 
-    unsigned int readLength = systemConfig->eepromReadWriteBufferSize;
-    if (dataLength - currentReadIndex < systemConfig->eepromReadWriteBufferSize) {
-      readLength = dataLength - currentReadIndex; 
+        unsigned int readLength = systemConfig->eepromReadWriteBufferSize;
+        if (dataLength - currentReadIndex < systemConfig->eepromReadWriteBufferSize) {
+            readLength = dataLength - currentReadIndex; 
+        }
+        unsigned char readBuffer1[readLength];
+        unsigned char readBuffer2[readLength];
+        unsigned char readBuffer3[readLength];
+
+        _readEEPROMBlock(currentAddress, readLength, readBuffer1);
+        _readEEPROMBlock(currentAddress, readLength, readBuffer2);
+        _readEEPROMBlock(currentAddress, readLength, readBuffer3);
+        for(char i = 0; i < readLength; i++) {
+            byte first = readBuffer1[i];
+            byte second = readBuffer2[i];
+            byte third = readBuffer3[i];
+            if(!(first == second && second == third)) {
+                corrected++;
+            } else {
+                good++;
+            }
+            byte corrected =
+                ((((first & 0b10000000) >> 7) + ((second & 0b10000000) >> 7) + ((third & 0b10000000) >> 7) >= 2 ? 1 : 0) << 7) +
+                ((((first & 0b01000000) >> 6) + ((second & 0b01000000) >> 6) + ((third & 0b01000000) >> 6) >= 2 ? 1 : 0) << 6) +
+                ((((first & 0b00100000) >> 5) + ((second & 0b00100000) >> 5) + ((third & 0b00100000) >> 5) >= 2 ? 1 : 0) << 5) +
+                ((((first & 0b00010000) >> 4) + ((second & 0b00010000) >> 4) + ((third & 0b00010000) >> 4) >= 2 ? 1 : 0) << 4) +
+                ((((first & 0b00001000) >> 3) + ((second & 0b00001000) >> 3) + ((third & 0b00001000) >> 3) >= 2 ? 1 : 0) << 3) +
+                ((((first & 0b00000100) >> 2) + ((second & 0b00000100) >> 2) + ((third & 0b00000100) >> 2) >= 2 ? 1 : 0) << 2) +
+                ((((first & 0b00000010) >> 1) + ((second & 0b00000010) >> 1) + ((third & 0b00000010) >> 1) >= 2 ? 1 : 0) << 1) +
+                ((((first & 0b00000001) >> 0) + ((second & 0b00000001) >> 0) + ((third & 0b00000001) >> 0) >= 2 ? 1 : 0) << 0);
+            dataReceiver[currentReadIndex + i] = corrected;
+        }
+
+        currentAddress += systemConfig->eepromReadWriteBufferSize; 
+        currentReadIndex += systemConfig->eepromReadWriteBufferSize;
+    };
+    if(corrected / (good + corrected) > 0) {
+        return false;
+    }
+    return true;
+}
+
+void Arcadable::_readEEPROMBlock(unsigned int startAddress, unsigned int readLength, unsigned char *dataReceiver) {
+    bool addressWritten = false;
+    while (!addressWritten) {
+        Wire.beginTransmission(systemConfig->eepromAddress);
+        Wire.write(startAddress >> 8);
+        Wire.write(startAddress & 0xFF);
+        addressWritten = Wire.endTransmission() == 0;
     }
 
     Wire.requestFrom(systemConfig->eepromAddress, readLength);
     int waitingTime = 0;
-    while(!Wire.available() && waitingTime <= 100) {
-      delay(1);
-      waitingTime++;
+    while(!Wire.available() && waitingTime <= 1000) {
+        delayMicroseconds(100);
+        waitingTime++;
     }
 
     int i = 0;
     while(Wire.available()) {
-      dataReceiver[currentReadIndex + i] = Wire.read();
-      i++;
+        dataReceiver[i] = Wire.read();
+        i++;
     }
-    currentAddress += systemConfig->eepromReadWriteBufferSize; 
-    currentReadIndex += systemConfig->eepromReadWriteBufferSize;
-		delay(1);
-  };
 }

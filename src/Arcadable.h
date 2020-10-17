@@ -101,6 +101,7 @@ class Arcadable {
 		static Arcadable *_instance;
 		bool _gameLoaded = false;
 		bool _readyToLoad = true;
+		bool _loading = false;
 		bool _pollImmediately = false;
 		bool _refresh = false;
 		IntervalTimer _mainTimer;
@@ -112,10 +113,15 @@ class Arcadable {
 		static void _pollTrigger();
 		void _startLoadGameLogic();
 		void _unloadGameLogic();
-		void _readAndLoadGameLogic();
-		void _readEEPROM(
+		bool _readAndLoadGameLogic();
+		bool _readEEPROM(
 			unsigned int startAddress,
 			unsigned int dataLength,
+			unsigned char *dataReceiver
+		);
+		void _readEEPROMBlock(
+			unsigned int startAddress,
+			unsigned int readLength,
 			unsigned char *dataReceiver
 		);
 
