@@ -17,7 +17,8 @@ enum InstructionType {
     Clear,
     SetRotation,
 	RunSet,
-	DebugLog
+	DebugLog,
+    InstructionSetType
 };
 
 class Instruction {
