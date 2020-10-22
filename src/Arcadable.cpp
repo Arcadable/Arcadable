@@ -63,6 +63,7 @@ void Arcadable::poll() {
             _unloadGameLogic();
         }
         bool readRes = _readAndLoadGameLogic();
+        canvas->setRotation(0);
         _readyToLoad = false;
         if (readRes) {
             _gameLoaded = true;
@@ -79,7 +80,6 @@ void Arcadable::poll() {
 
 void Arcadable::mainStep() {
     if(_gameLoaded && !_loading) {
-
         systemConfig->fetchInputValues();
         mainInstructionSet->execute();
     }
@@ -90,10 +90,21 @@ void Arcadable::renderStep() {
     if(_gameLoaded && !_loading) {
         Arcadable::getInstance()->renderInstructionSet->execute();
     } else if (!_loading) {
+        canvas->fillScreen(CRGB::Black);
+        canvas->setRotation(0);
+        if((millis() / 500) % 2) {
+            canvas->fillTriangle(0, systemConfig->screenHeight, 7, systemConfig->screenHeight, 0, systemConfig->screenHeight - 7, 0x111111);
+            canvas->drawLine(0, systemConfig->screenHeight - 1, 6, systemConfig->screenHeight - 7, 0x111111);
+            canvas->drawLine(1, systemConfig->screenHeight - 1, 6, systemConfig->screenHeight - 6, 0x111111);
+            canvas->drawLine(0, systemConfig->screenHeight - 2, 5, systemConfig->screenHeight - 7, 0x111111);
+            canvas->drawLine(0, systemConfig->screenHeight - 3, 5, systemConfig->screenHeight - 8, 0x111111);
+            canvas->drawLine(2, systemConfig->screenHeight - 1, 7, systemConfig->screenHeight - 6, 0x111111);
+
+        }
+        canvas->setRotation((millis() / 2000) % 4);
         canvas->setTextColor(0xffffff);
         canvas->setTextSize(1);
         canvas->setTextWrap(false);
-        canvas->fillScreen(CRGB::Black);
 
         canvas->setCursor(systemConfig->screenWidth / 2 - 18, systemConfig->screenHeight / 2 - 10);
         canvas->print("Insert");
@@ -163,7 +174,7 @@ bool Arcadable::_readAndLoadGameLogic() {
         }
         length = (lengthData[0] << 8) + lengthData[1];
         currentParsePosition += 2;
-        delayMicroseconds(100);
+
         unsigned char data[length];
         readRes = _readEEPROM(currentParsePosition, length, data);
         if(!readRes) {
@@ -179,18 +190,10 @@ bool Arcadable::_readAndLoadGameLogic() {
 
         bool mainSet = false;
         bool renderSet = false;
-        if(currentParsePosition >= 2694){
-            continueReading = false;
-        }
-
 
         for (unsigned int i = 1 ; i < length ; i += 2) {
             unsigned short id = static_cast<unsigned short>((data[i + 0] << 8) + data[i + 1]);
-            if(isInstructionType) {
-                Serial.print("isntr type");Serial.println(type);
-            } else {
-                Serial.print("value type");Serial.println(type);
-            }
+
             if(isInstructionType) {
                 switch(type) {
                     case InstructionType::MutateValue: {
@@ -389,10 +392,8 @@ bool Arcadable::_readAndLoadGameLogic() {
                             renderInstructionSet = &this->instructionSets[id];
                             renderSet = true;
                         }
-                        Serial.print("size"); Serial.println(size);
 
-                        i += 2 + (size * 2);
-                        Serial.println("stop");
+                        i += (2 + (size * 2));
                         continueReading = false;
                         break;
                     }
@@ -503,7 +504,6 @@ bool Arcadable::_readAndLoadGameLogic() {
         }
         
     }
-    return false;
     for (auto x : valueParamsMap) {
         if(this->values[x.first]->type != ValueType::listValue ) {
             this->values[x.first]->init(x.second);
@@ -570,6 +570,7 @@ bool Arcadable::_readEEPROM(unsigned int startAddress, unsigned int dataLength, 
         currentAddress += systemConfig->eepromReadWriteBufferSize; 
         currentReadIndex += systemConfig->eepromReadWriteBufferSize;
     };
+    delayMicroseconds(10);
     if(corrected / (good + corrected) > 0) {
         return false;
     }
@@ -587,8 +588,8 @@ void Arcadable::_readEEPROMBlock(unsigned int startAddress, unsigned int readLen
 
     Wire.requestFrom(systemConfig->eepromAddress, readLength);
     int waitingTime = 0;
-    while(!Wire.available() && waitingTime <= 1000) {
-        delayMicroseconds(100);
+    while(!Wire.available() && waitingTime <= 10000) {
+        delayMicroseconds(10);
         waitingTime++;
     }
 
