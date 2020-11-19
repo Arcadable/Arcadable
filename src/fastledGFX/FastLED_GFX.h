@@ -53,6 +53,7 @@ public:
       int16_t radius, CRGB color),
     fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
       int16_t radius, CRGB color),
+    drawImage(int16_t x, int16_t y, int16_t w, int16_t h, CRGB k, std::vector<short unsigned int>* data),
     drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
       int16_t w, int16_t h, CRGB color),
     drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,

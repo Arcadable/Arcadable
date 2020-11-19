@@ -28,6 +28,8 @@
 #include "values/EvaluationValue.h"
 #include "values/DigitalInputValue.h"
 #include "values/AnalogInputValue.h"
+#include "values/DataValue.h"
+#include "values/ImageValue.h"
 
 #include "instructions/MutateValueInstruction.h"
 #include "instructions/RunConditionInstruction.h"
@@ -44,6 +46,7 @@
 #include "instructions/DrawTriangleInstruction.h"
 #include "instructions/DebugLogInstruction.h"
 #include "instructions/ClearInstruction.h"
+#include "instructions/DrawImageInstruction.h"
 
 class Arcadable {
 	public:
@@ -58,6 +61,8 @@ class Arcadable {
 		std::map<unsigned short int, ListValue> listValues;
 		std::map<unsigned short int, TextValue> textValues;
 		std::map<unsigned short int, EvaluationValue> evaluationValues;
+		std::map<unsigned short int, DataValue> dataValues;
+		std::map<unsigned short int, ImageValue> imageValues;
 
 		std::map<unsigned short int, MutateValueInstruction> mutateValueInstructions;
 		std::map<unsigned short int, RunConditionInstruction> runConditionInstructions;
@@ -74,6 +79,8 @@ class Arcadable {
 		std::map<unsigned short int, SetRotationInstruction> setRotationInstructions;
 		std::map<unsigned short int, RunSetInstruction> runSetInstructions;
 		std::map<unsigned short int, DebugLogInstruction> debugLogInstructions;
+		std::map<unsigned short int, DrawImageInstruction> drawImageInstructions;
+		
 
 		std::map<unsigned short int, Value*> values;
 		std::map<unsigned short int, Instruction*> instructions;

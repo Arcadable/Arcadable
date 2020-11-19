@@ -193,8 +193,8 @@ bool Arcadable::_readAndLoadGameLogic() {
 
         for (unsigned int i = 1 ; i < length ; i += 2) {
             unsigned short id = static_cast<unsigned short>((data[i + 0] << 8) + data[i + 1]);
-
             if(isInstructionType) {
+
                 switch(type) {
                     case InstructionType::MutateValue: {
                         unsigned short leftValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
@@ -329,6 +329,18 @@ bool Arcadable::_readAndLoadGameLogic() {
                         i += 14;
                         break;
                     }
+                    case InstructionType::DrawImage: {
+                        unsigned short xValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        unsigned short yValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
+                        unsigned short imageValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
+
+
+                        this->drawImageInstructions[id] = DrawImageInstruction(id);
+                        this->instructions[id] = &this->drawImageInstructions[id];
+                        instructionParamsMap[id] = { xValueID, yValueID, imageValueID};
+                        i += 6;
+                        break;
+                    }
                     case InstructionType::DrawText: {
                         unsigned short colorValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
                         unsigned short xValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
@@ -400,7 +412,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                     default: break;
                 }
             } else {
-                
+
                 switch(type) {
                     case ValueType::number: {
                         float f;
@@ -418,6 +430,32 @@ bool Arcadable::_readAndLoadGameLogic() {
                         this->values[id] = &this->pixelValues[id];
                         valueParamsMap[id] = {xID, yID};
                         i += 4;
+                        break;
+                    }
+                    case ValueType::image: {
+                        unsigned short dataID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        unsigned short widthID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
+                        unsigned short heightID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
+                        unsigned short keyColorID = static_cast<unsigned short>((data[i + 8] << 8) + data[i + 9]);
+
+                        this->imageValues[id] = ImageValue(id);
+                        this->values[id] = &this->imageValues[id];
+                        valueParamsMap[id] = {dataID, widthID, heightID, keyColorID};
+                        i += 8;
+                        break;
+                    }
+                    case ValueType::data: {
+                        unsigned short size = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        valueParamsMap[id] = std::vector<unsigned short>(size);
+                        for(unsigned short vI = 0; vI < size; vI += 1) {
+                            unsigned short valueID = static_cast<unsigned short>(data[i + 4 + vI]);
+                            valueParamsMap[id][vI] = valueID;
+                        }
+
+
+                        this->dataValues[id] = DataValue(id, size);
+                        this->values[id] = &this->dataValues[id];
+                        i += (2 + size);
                         break;
                     }
                     case ValueType::digitalInputPointer: {

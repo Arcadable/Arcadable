@@ -13,7 +13,9 @@ enum ValueType {
 	listDeclaration,
 	listValue,
     text,
-    evaluation
+    evaluation,
+    image,
+	data
 };
 
 

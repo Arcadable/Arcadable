@@ -18,7 +18,8 @@ enum InstructionType {
     SetRotation,
 	RunSet,
 	DebugLog,
-    InstructionSetType
+    InstructionSetType,
+    DrawImage
 };
 
 class Instruction {

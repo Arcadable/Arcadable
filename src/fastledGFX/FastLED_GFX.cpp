@@ -350,6 +350,20 @@ void FastLED_GFX::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, i
   }
 }
 
+void FastLED_GFX::drawImage(int16_t x, int16_t y, int16_t w, int16_t h, CRGB k, std::vector<short unsigned int>* data) {
+  unsigned short int dataPos = 0;
+  for(unsigned short int yPos = 0; yPos < h; yPos++) {
+    for(unsigned short int xPos = 0; xPos < w; xPos++) {
+      CRGB color = (data->at(dataPos) << 16) + (data->at(dataPos + 1) << 8) + data->at(dataPos + 2);
+      dataPos = dataPos + 3;
+      if(color != k) {
+        drawPixel(xPos + x, yPos + y, color);
+      }
+    }
+  }
+}
+
+
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
 // provided bitmap buffer (must be PROGMEM memory) using the specified
 // foreground color (unset bits are transparent).
