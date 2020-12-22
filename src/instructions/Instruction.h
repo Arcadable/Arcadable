@@ -19,20 +19,26 @@ enum InstructionType {
 	RunSet,
 	DebugLog,
     InstructionSetType,
-    DrawImage
+    DrawImage,
+    Wait,
+    Tone,
+    AwaitedRunSet,
+    AwaitedRunCondition,
+    AwaitedTone
 };
 
 class Instruction {
     public:
         InstructionType type;
         unsigned short ID;
-        
-        virtual void execute();
+        bool await;
+        virtual std::vector<Executable>* getExecutables(bool async);
         virtual void init(std::vector<unsigned short> ids);
         Instruction();
         Instruction(
             unsigned short ID,
-            InstructionType type
+            InstructionType type,
+            bool await
         );
 
 };

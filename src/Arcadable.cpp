@@ -81,14 +81,14 @@ void Arcadable::poll() {
 void Arcadable::mainStep() {
     if(_gameLoaded && !_loading) {
         systemConfig->fetchInputValues();
-        mainInstructionSet->execute();
+        mainInstructionSet->getExecutables();
     }
 
 }
 
 void Arcadable::renderStep() {
     if(_gameLoaded && !_loading) {
-        Arcadable::getInstance()->renderInstructionSet->execute();
+        Arcadable::getInstance()->renderInstructionSet->getExecutables();
     } else if (!_loading) {
         canvas->fillScreen(CRGB::Black);
         canvas->setRotation(0);
@@ -200,10 +200,25 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short leftValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
                         unsigned short rightValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
                         
-                        this->mutateValueInstructions[id] = MutateValueInstruction(id);
+                        this->mutateValueInstructions[id] = MutateValueInstruction(id, false);
                         this->instructions[id] = &this->mutateValueInstructions[id];
                         instructionParamsMap[id] = {leftValueID, rightValueID};
                         i += 4;
+                        break;
+                    }
+                    case InstructionType::AwaitedRunCondition: {
+                        unsigned short evaluationValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        unsigned short failSetID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
+                        unsigned short successSetID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
+                        
+                        this->runConditionInstructions[id] = RunConditionInstruction(id, true);
+                        this->instructions[id] = &this->runConditionInstructions[id];
+                        if(failSetID == 65535) {
+                            instructionParamsMap[id] = {evaluationValueID, successSetID};
+                        } else {
+                            instructionParamsMap[id] = {evaluationValueID, successSetID, failSetID};
+                        }
+                        i += 6;
                         break;
                     }
                     case InstructionType::RunCondition: {
@@ -211,7 +226,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short failSetID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
                         unsigned short successSetID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
                         
-                        this->runConditionInstructions[id] = RunConditionInstruction(id);
+                        this->runConditionInstructions[id] = RunConditionInstruction(id, false);
                         this->instructions[id] = &this->runConditionInstructions[id];
                         if(failSetID == 65535) {
                             instructionParamsMap[id] = {evaluationValueID, successSetID};
@@ -226,7 +241,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short xValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
                         unsigned short yValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
                         
-                        this->drawPixelInstructions[id] = DrawPixelInstruction(id);
+                        this->drawPixelInstructions[id] = DrawPixelInstruction(id, false);
                         this->instructions[id] = &this->drawPixelInstructions[id];
                         instructionParamsMap[id] = {colorValueID, xValueID, yValueID};
                         i += 6;
@@ -239,7 +254,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short x2ValueID = static_cast<unsigned short>((data[i + 8] << 8) + data[i + 9]);
                         unsigned short y2ValueID = static_cast<unsigned short>((data[i + 10] << 8) + data[i + 11]);
                         
-                        this->drawLineInstructions[id] = DrawLineInstruction(id);
+                        this->drawLineInstructions[id] = DrawLineInstruction(id, false);
                         this->instructions[id] = &this->drawLineInstructions[id];
                         instructionParamsMap[id] = {colorValueID, x1ValueID, y1ValueID, x2ValueID, y2ValueID};
                         i += 10;
@@ -252,7 +267,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short x2ValueID = static_cast<unsigned short>((data[i + 8] << 8) + data[i + 9]);
                         unsigned short y2ValueID = static_cast<unsigned short>((data[i + 10] << 8) + data[i + 11]);
                         
-                        this->drawRectInstructions[id] = DrawRectInstruction(id);
+                        this->drawRectInstructions[id] = DrawRectInstruction(id, false);
                         this->instructions[id] = &this->drawRectInstructions[id];
                         instructionParamsMap[id] = { colorValueID, x1ValueID, y1ValueID, x2ValueID, y2ValueID};
                         i += 10;
@@ -265,7 +280,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short x2ValueID = static_cast<unsigned short>((data[i + 8] << 8) + data[i + 9]);
                         unsigned short y2ValueID = static_cast<unsigned short>((data[i + 10] << 8) + data[i + 11]);
                         
-                        this->fillRectInstructions[id] = FillRectInstruction(id);
+                        this->fillRectInstructions[id] = FillRectInstruction(id, false);
                         this->instructions[id] = &this->fillRectInstructions[id];
 
                         instructionParamsMap[id] = { colorValueID, x1ValueID, y1ValueID, x2ValueID, y2ValueID};
@@ -278,7 +293,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short xValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
                         unsigned short yValueID = static_cast<unsigned short>((data[i + 8] << 8) + data[i + 9]);
                         
-                        this->drawCircleInstructions[id] = DrawCircleInstruction(id);
+                        this->drawCircleInstructions[id] = DrawCircleInstruction(id, false);
                         this->instructions[id] = &this->drawCircleInstructions[id];
 
                         instructionParamsMap[id] = { colorValueID, radiusValueID, xValueID, yValueID};
@@ -291,7 +306,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short xValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
                         unsigned short yValueID = static_cast<unsigned short>((data[i + 8] << 8) + data[i + 9]);
                         
-                        this->fillCircleInstructions[id] = FillCircleInstruction(id);
+                        this->fillCircleInstructions[id] = FillCircleInstruction(id, false);
                         this->instructions[id] = &this->fillCircleInstructions[id];
 
                         instructionParamsMap[id] = { colorValueID, radiusValueID, xValueID, yValueID};
@@ -307,7 +322,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short x3ValueID = static_cast<unsigned short>((data[i + 12] << 8) + data[i + 13]);
                         unsigned short y3ValueID = static_cast<unsigned short>((data[i + 14] << 8) + data[i + 15]);
                         
-                        this->drawTriangleInstructions[id] = DrawTriangleInstruction(id);
+                        this->drawTriangleInstructions[id] = DrawTriangleInstruction(id, false);
                         this->instructions[id] = &this->drawTriangleInstructions[id];
 
                         instructionParamsMap[id] = { colorValueID, x1ValueID, y1ValueID, x2ValueID, y2ValueID, x3ValueID, y3ValueID};
@@ -323,7 +338,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short x3ValueID = static_cast<unsigned short>((data[i + 12] << 8) + data[i + 13]);
                         unsigned short y3ValueID = static_cast<unsigned short>((data[i + 14] << 8) + data[i + 15]);
                         
-                        this->fillTriangleInstructions[id] = FillTriangleInstruction(id);
+                        this->fillTriangleInstructions[id] = FillTriangleInstruction(id, false);
                         this->instructions[id] = &this->fillTriangleInstructions[id];
                         instructionParamsMap[id] = { colorValueID, x1ValueID, y1ValueID, x2ValueID, y2ValueID, x3ValueID, y3ValueID};
                         i += 14;
@@ -335,7 +350,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short imageValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
 
 
-                        this->drawImageInstructions[id] = DrawImageInstruction(id);
+                        this->drawImageInstructions[id] = DrawImageInstruction(id, false);
                         this->instructions[id] = &this->drawImageInstructions[id];
                         instructionParamsMap[id] = { xValueID, yValueID, imageValueID};
                         i += 6;
@@ -348,31 +363,40 @@ bool Arcadable::_readAndLoadGameLogic() {
                         unsigned short scaleValueID = static_cast<unsigned short>((data[i + 8] << 8) + data[i + 9]);
                         unsigned short textValueID = static_cast<unsigned short>((data[i + 10] << 8) + data[i + 11]);
                         
-                        this->drawTextInstructions[id] = DrawTextInstruction(id);
+                        this->drawTextInstructions[id] = DrawTextInstruction(id, false);
                         this->instructions[id] = &this->drawTextInstructions[id];
                         instructionParamsMap[id] = { colorValueID, scaleValueID, textValueID, xValueID, yValueID};
                         i += 10;
                         break;
                     }
                     case InstructionType::Clear: {                
-                        this->clearInstructions[id] = ClearInstruction(id);
+                        this->clearInstructions[id] = ClearInstruction(id, false);
                         this->instructions[id] = &this->clearInstructions[id];
                         break;
                     }
                     case InstructionType::SetRotation: {
                         unsigned short rotationValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
                         
-                        this->setRotationInstructions[id] = SetRotationInstruction(id);
+                        this->setRotationInstructions[id] = SetRotationInstruction(id, false);
                         this->instructions[id] = &this->setRotationInstructions[id];
 
                         instructionParamsMap[id] = { rotationValueID};
                         i += 2;
                         break;
                     }
+                    case InstructionType::AwaitedRunSet: {
+                        unsigned short setID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        
+                        this->runSetInstructions[id] = RunSetInstruction(id, true);
+                        this->instructions[id] = &this->runSetInstructions[id];
+                        instructionParamsMap[id] = { setID};
+                        i += 2;
+                        break;
+                    }
                     case InstructionType::RunSet: {
                         unsigned short setID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
                         
-                        this->runSetInstructions[id] = RunSetInstruction(id);
+                        this->runSetInstructions[id] = RunSetInstruction(id, false);
                         this->instructions[id] = &this->runSetInstructions[id];
                         instructionParamsMap[id] = { setID};
                         i += 2;
@@ -381,22 +405,57 @@ bool Arcadable::_readAndLoadGameLogic() {
                     case InstructionType::DebugLog: {
                         unsigned short logValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
                         
-                        this->debugLogInstructions[id] = DebugLogInstruction(id);
+                        this->debugLogInstructions[id] = DebugLogInstruction(id, false);
                         this->instructions[id] = &this->debugLogInstructions[id];
 
                         instructionParamsMap[id] = { logValueID};
                         i += 2;
                         break;
                     }
+                    case InstructionType::Wait: {
+                        unsigned short amountValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        
+                        this->waitInstructions[id] = WaitInstruction(id, false);
+                        this->instructions[id] = &this->waitInstructions[id];
+
+                        instructionParamsMap[id] = { amountValueID };
+                        i += 2;
+                        break;
+                    }
+                    case InstructionType::Tone: {
+                        unsigned short volumeValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        unsigned short frequencyValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
+                        unsigned short durationValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
+
+                        this->toneInstructions[id] = ToneInstruction(id, false);
+                        this->instructions[id] = &this->toneInstructions[id];
+
+                        instructionParamsMap[id] = { volumeValueID, frequencyValueID, durationValueID };
+                        i += 6;
+                        break;
+                    }
+                    case InstructionType::AwaitedTone: {
+                        unsigned short volumeValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        unsigned short frequencyValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
+                        unsigned short durationValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
+
+                        this->toneInstructions[id] = ToneInstruction(id, true);
+                        this->instructions[id] = &this->toneInstructions[id];
+
+                        instructionParamsMap[id] = { volumeValueID, frequencyValueID, durationValueID };
+                        i += 6;
+                        break;
+                    }
                     case InstructionType::InstructionSetType: {
-                        unsigned short size = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        unsigned short size = static_cast<unsigned short>(((data[i + 2] << 8) & 0b1111111) + data[i + 3]);
+                        bool async = static_cast<bool>((data[i + 2] >> 7) & 0b1);
 
                         instructionSetParamsMap[id] = std::vector<unsigned short>(size);
                         for(unsigned short vI = 0; vI < size * 2; vI += 2) {
                             unsigned short instructionID = static_cast<unsigned short>((data[i + 4 + vI] << 8) + data[i + 5 + vI]);
                             instructionSetParamsMap[id][vI / 2] = instructionID;
                         }
-                        this->instructionSets[id] = InstructionSet(id, size);
+                        this->instructionSets[id] = InstructionSet(id, size, async);
                         if (!mainSet) {
                             mainInstructionSet = &this->instructionSets[id];
                             mainSet = true;

@@ -9,10 +9,11 @@ class MutateValueInstruction: public Instruction {
         Value* leftValue;
         Value* rightValue;
 
-        void execute();
+        std::vector<Executable>* getExecutables(bool async);
         MutateValueInstruction();
         MutateValueInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await
         );
         void init(std::vector<unsigned short> ids);
 

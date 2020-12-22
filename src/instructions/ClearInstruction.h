@@ -6,10 +6,11 @@
 class ClearInstruction: public Instruction {
 	public:
 
-        void execute();
+        std::vector<Executable>* getExecutables(bool async);
         ClearInstruction();
         ClearInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await
         );
         void init(std::vector<unsigned short> ids);
 

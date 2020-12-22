@@ -11,10 +11,11 @@ class RunConditionInstruction: public Instruction {
         unsigned short successSet;
         unsigned short failSet;
 
-        void execute();
+        std::vector<Executable>* getExecutables(bool async);
         RunConditionInstruction();
         RunConditionInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await
         );
         void init(std::vector<unsigned short> ids);
 

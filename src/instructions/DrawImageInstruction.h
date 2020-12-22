@@ -9,10 +9,11 @@ class DrawImageInstruction: public Instruction {
         Value* xValue;
         Value* yValue;
         Value* imageValue;
-        void execute();
+        std::vector<Executable>* getExecutables(bool async);
         DrawImageInstruction();
         DrawImageInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await
         );
         void init(std::vector<unsigned short> ids);
 

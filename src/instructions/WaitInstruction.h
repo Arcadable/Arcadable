@@ -1,17 +1,16 @@
 #pragma once
-#define DrawPixelInstruction_h
+#define WaitInstruction_h
 #include <instructions/Instruction.h>
 #include <values/Value.h>
 #include <vector>
 
-class DrawPixelInstruction: public Instruction {
+class WaitInstruction: public Instruction {
 	public:
-        Value* colorValue;
-        Value* xValue;
-        Value* yValue;
+        Value* amountValue;
+
         std::vector<Executable>* getExecutables(bool async);
-        DrawPixelInstruction();
-        DrawPixelInstruction(
+        WaitInstruction();
+        WaitInstruction(
             unsigned short ID,
             bool await
         );

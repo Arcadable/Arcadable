@@ -1,17 +1,18 @@
 #pragma once
-#define DrawPixelInstruction_h
+#define ToneInstruction_h
 #include <instructions/Instruction.h>
 #include <values/Value.h>
 #include <vector>
 
-class DrawPixelInstruction: public Instruction {
+class ToneInstruction: public Instruction {
 	public:
-        Value* colorValue;
-        Value* xValue;
-        Value* yValue;
+        Value* volumeValue;
+        Value* frequencyValue;
+        Value* durationValue;
+
         std::vector<Executable>* getExecutables(bool async);
-        DrawPixelInstruction();
-        DrawPixelInstruction(
+        ToneInstruction();
+        ToneInstruction(
             unsigned short ID,
             bool await
         );

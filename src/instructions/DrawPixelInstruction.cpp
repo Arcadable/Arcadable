@@ -2,8 +2,9 @@
 #include "Arcadable.h"
 
 DrawPixelInstruction::DrawPixelInstruction (
-    unsigned short ID
-) : Instruction(ID, InstructionType::DrawPixel) {}
+    unsigned short ID,
+    bool await
+) : Instruction(ID, InstructionType::DrawPixel, await) {}
 DrawPixelInstruction::DrawPixelInstruction() {}
 
 void DrawPixelInstruction::init(std::vector<unsigned short> ids) {
@@ -11,11 +12,20 @@ void DrawPixelInstruction::init(std::vector<unsigned short> ids) {
     this->xValue = Arcadable::getInstance()->values.find(ids[1])->second;
     this->yValue = Arcadable::getInstance()->values.find(ids[2])->second;
 }
-void DrawPixelInstruction::execute() {
+std::vector<Executable>* DrawPixelInstruction::getExecutables(bool async) {
   
-    int pixelX = static_cast<int>(this->xValue->getNumber());
-    int pixelY = static_cast<int>(this->yValue->getNumber());
+    std::vector<Executable> awaiting = {};
+    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
 
-    CRGB pixelColor = CRGB(this->colorValue->getNumber());
-    Arcadable::getInstance()->canvas->drawPixel(pixelX, pixelY, pixelColor);
+        int pixelX = static_cast<int>(this->xValue->getNumber());
+        int pixelY = static_cast<int>(this->yValue->getNumber());
+
+        CRGB pixelColor = CRGB(this->colorValue->getNumber());
+        Arcadable::getInstance()->canvas->drawPixel(pixelX, pixelY, pixelColor);
+        return {};
+
+
+    }, async, false, awaiting, NULL, NULL)};
+
+    return &executables;
 }

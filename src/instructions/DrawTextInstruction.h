@@ -11,10 +11,11 @@ class DrawTextInstruction: public Instruction {
         Value* textValue;
         Value* xValue;
         Value* yValue;
-        void execute();
+        std::vector<Executable>* getExecutables(bool async);
         DrawTextInstruction();
         DrawTextInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await
         );
         void init(std::vector<unsigned short> ids);
 

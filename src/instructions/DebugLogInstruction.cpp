@@ -3,16 +3,22 @@
 #include "values/ListValue.h"
 #include "Arcadable.h"
 DebugLogInstruction::DebugLogInstruction (
-    unsigned short ID
-) : Instruction(ID, InstructionType::DebugLog) {}
+    unsigned short ID,
+    bool await
+) : Instruction(ID, InstructionType::DebugLog, await) {}
 DebugLogInstruction::DebugLogInstruction() {}
 
 void DebugLogInstruction::init(std::vector<unsigned short> ids) {
     this->logValue = Arcadable::getInstance()->values.find(ids[0])->second;
 }
-void DebugLogInstruction::execute() {
-    Serial.print("debug.log - ");
-    this->print(this->logValue);
+std::vector<Executable>* DebugLogInstruction::getExecutables(bool async) {
+    std::vector<Executable> awaiting = {};
+    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
+        Serial.print("debug.log - ");
+        this->print(this->logValue);
+        return {};
+    }, async, false, awaiting, NULL, NULL)};
+    return &executables;
 }
 
 void DebugLogInstruction::print(Value *v) {

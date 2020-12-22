@@ -3,27 +3,26 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/niek/.arduino15/packages/arduino/tools/**",
-                "/home/niek/.arduino15/packages/arduino/hardware/avr/1.8.2/**",
                 "${workspaceFolder}/**",
-                "/home/niek/.arduino15/packages/arduino/hardware/avr/1.8.2/cores/arduino",
-                "/home/niek/Programs/arduino-1.8.10/hardware/teensy/avr/libraries/**"
+                "~/Programs/arduino-1.8.13/tools/**",
+                "~/Programs/arduino-1.8.13/hardware/teensy/avr/**",
+                "~/Programs/arduino-1.8.13/hardware/arduino/avr/**",
+                "~/Programs/arduino-1.8.13/hardware/teensy/avr/cores/teensy4",
+                "~/Programs/arduino-1.8.13/hardware/arduino/avr/cores/arduino",
+                "~/Programs/arduino-1.8.13/hardware/tools/avr/avr/include/avr/**",
+                "~/Programs/arduino-1.8.13/hardware/tools/**",
+                "~/Programs/arduino-1.8.13/hardware/tools/avr/avr/include/**"
             ],
-            "defines": [],
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "gnu11",
-            "cppStandard": "gnu++14",
-            "intelliSenseMode": "clang-x64",
             "forcedInclude": [
-                "/home/niek/.arduino15/packages/arduino/hardware/avr/1.8.2/cores/arduino/Arduino.h"
+                "~/Programs/arduino-1.8.13/hardware/arduino/avr/cores/arduino/Arduino.h"
             ],
-            "browse": {
-                "path": [
-                    "${workspaceFolder}"
-                ],
-                "limitSymbolsToIncludedHeaders": true,
-                "databaseFilename": ""
-            }
+            "compilerPath": "~/Programs/arduino-1.8.13/hardware/tools/avr/bin/avr-gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "gcc-x64",
+            "defines": [
+                "USBCON"
+            ]
         }
     ],
     "version": 4

@@ -10,10 +10,11 @@ class DrawCircleInstruction: public Instruction {
         Value* radiusValue;
         Value* xValue;
         Value* yValue;
-        void execute();
+        std::vector<Executable>* getExecutables(bool async);
         DrawCircleInstruction();
         DrawCircleInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await
         );
         void init(std::vector<unsigned short> ids);
 

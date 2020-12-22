@@ -14,6 +14,9 @@
 #include <Wire.h>
 
 #include "SystemConfig.h"
+#include "Executable.h"
+#include "CallStack.h"
+
 #include "values/Value.h"
 #include "instructions/Instruction.h"
 #include "instructions/InstructionSet.h"
@@ -47,6 +50,8 @@
 #include "instructions/DebugLogInstruction.h"
 #include "instructions/ClearInstruction.h"
 #include "instructions/DrawImageInstruction.h"
+#include "instructions/WaitInstruction.h"
+#include "instructions/ToneInstruction.h"
 
 class Arcadable {
 	public:
@@ -80,7 +85,9 @@ class Arcadable {
 		std::map<unsigned short int, RunSetInstruction> runSetInstructions;
 		std::map<unsigned short int, DebugLogInstruction> debugLogInstructions;
 		std::map<unsigned short int, DrawImageInstruction> drawImageInstructions;
-		
+		std::map<unsigned short int, WaitInstruction> waitInstructions;
+		std::map<unsigned short int, ToneInstruction> toneInstructions;
+
 
 		std::map<unsigned short int, Value*> values;
 		std::map<unsigned short int, Instruction*> instructions;

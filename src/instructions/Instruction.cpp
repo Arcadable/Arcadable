@@ -3,12 +3,14 @@
 
 Instruction::Instruction (
     unsigned short ID,
-    InstructionType type
+    InstructionType type,
+    bool await
 ) {
     this->type = type;
     this->ID = ID;
+    this->await = await;
 }
 Instruction::Instruction () { }
 
-void Instruction::execute() {}
+std::vector<Executable>* Instruction::getExecutables(bool async) {}
 void Instruction::init(std::vector<unsigned short> ids) {}

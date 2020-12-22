@@ -9,14 +9,18 @@ class InstructionSet {
         std::vector<unsigned short> instructions;
         
         unsigned short ID;
+        bool async;
 
-        void execute();
+        std::vector<Executable>* getExecutables();
         InstructionSet();
         InstructionSet(
             unsigned short ID,
-            unsigned short size
+            unsigned short size,
+            bool async
         );
         void init(std::vector<unsigned short> ids);
+    private: 
+        std::vector<Executable>* processAwaiting(std::vector<Executable>& executables);
 
 
 };

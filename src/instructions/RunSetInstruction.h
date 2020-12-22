@@ -8,10 +8,11 @@ class RunSetInstruction: public Instruction {
 	public:
         unsigned short set;
 
-        void execute();
+        std::vector<Executable>* getExecutables(bool async);
         RunSetInstruction();
         RunSetInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await
         );
         void init(std::vector<unsigned short> ids);
 };

@@ -8,10 +8,11 @@ class SetRotationInstruction: public Instruction {
 	public:
         Value* rotationValue;
 
-        void execute();
+        std::vector<Executable>* getExecutables(bool async);
         SetRotationInstruction();
         SetRotationInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await
         );
         void init(std::vector<unsigned short> ids);
 };

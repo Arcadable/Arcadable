@@ -13,10 +13,11 @@ class DrawTriangleInstruction: public Instruction {
         Value* y2Value;
         Value* x3Value;
         Value* y3Value;
-        void execute();
+        std::vector<Executable>* getExecutables(bool async);
         DrawTriangleInstruction();
         DrawTriangleInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await
         );
         void init(std::vector<unsigned short> ids);
 
