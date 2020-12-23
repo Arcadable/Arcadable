@@ -44,10 +44,10 @@ double SystemConfig::get(SystemConfigType type) {
             return this->screenHeight;
         }
         case SystemConfigType::targetMainMillis: {
-            return this->targetMainMillis;
+            return this->targetMainMicros / 1000;
         }
         case SystemConfigType::targetRenderMillis: {
-            return this->targetMainMillis;
+            return this->targetMainMicros / 1000;
         }
         case SystemConfigType::currentMillis: {
             return millis() - this->startMillis;
@@ -62,8 +62,8 @@ double SystemConfig::get(SystemConfigType type) {
 SystemConfig::SystemConfig(
     unsigned short int screenWidth,
     unsigned short int screenHeight,
-    unsigned short int targetMainMillis,
-    unsigned short int targetRenderMillis,
+    unsigned short int targetMainMicros,
+    unsigned short int targetRenderMicros,
     unsigned long int startMillis,
     bool layoutIsZigZag,
     unsigned int wireClock,
@@ -82,8 +82,8 @@ SystemConfig::SystemConfig(
 ) {
     this->screenWidth = screenWidth;
     this->screenHeight = screenHeight;
-    this->targetMainMillis = targetMainMillis;
-    this->targetRenderMillis = targetRenderMillis;
+    this->targetMainMicros = targetMainMicros;
+    this->targetRenderMicros = targetRenderMicros;
     this->startMillis = startMillis;
     this->layoutIsZigZag = layoutIsZigZag;
     this->wireClock = wireClock;

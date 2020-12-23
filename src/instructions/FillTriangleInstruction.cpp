@@ -17,10 +17,7 @@ void FillTriangleInstruction::init(std::vector<unsigned short> ids) {
     this->x3Value = Arcadable::getInstance()->values.find(ids[5])->second;
     this->y3Value = Arcadable::getInstance()->values.find(ids[6])->second;
 
-}
-std::vector<Executable>* FillTriangleInstruction::getExecutables(bool async) {
-    std::vector<Executable> awaiting = {};
-    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
+    this->executables = {Executable([this] () -> const std::vector<Executable>& {
 
         int pixel1X = static_cast<int>(this->x1Value->getNumber());
         int pixel1Y = static_cast<int>(this->y1Value->getNumber());
@@ -30,10 +27,8 @@ std::vector<Executable>* FillTriangleInstruction::getExecutables(bool async) {
         int pixel3Y = static_cast<int>(this->y3Value->getNumber());
         CRGB triangleColor = CRGB(this->colorValue->getNumber());
         Arcadable::getInstance()->canvas->fillTriangle(pixel1X, pixel1Y, pixel2X, pixel2Y, pixel3X, pixel3Y, triangleColor);
-        return {};
+        return this->empty;
 
 
-    }, async, false, awaiting, NULL, NULL)};
-
-    return &executables;
+    }, false, false, NULL, NULL)};
 }

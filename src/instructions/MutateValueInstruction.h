@@ -3,13 +3,13 @@
 #include <instructions/Instruction.h>
 #include <values/Value.h>
 #include <vector>
+#include <Executable.h>
 
 class MutateValueInstruction: public Instruction {
 	public:
         Value* leftValue;
         Value* rightValue;
 
-        std::vector<Executable>* getExecutables(bool async);
         MutateValueInstruction();
         MutateValueInstruction(
             unsigned short ID,

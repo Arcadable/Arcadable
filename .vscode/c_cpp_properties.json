@@ -11,7 +11,8 @@
                 "~/Programs/arduino-1.8.13/hardware/arduino/avr/cores/arduino",
                 "~/Programs/arduino-1.8.13/hardware/tools/avr/avr/include/avr/**",
                 "~/Programs/arduino-1.8.13/hardware/tools/**",
-                "~/Programs/arduino-1.8.13/hardware/tools/avr/avr/include/**"
+                "~/Programs/arduino-1.8.13/hardware/tools/avr/avr/include/**",
+                "~/Arduino/libraries/TeensyTimerTool/src/**"
             ],
             "forcedInclude": [
                 "~/Programs/arduino-1.8.13/hardware/arduino/avr/cores/arduino/Arduino.h"

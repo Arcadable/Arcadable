@@ -17,21 +17,15 @@ void RunConditionInstruction::init(std::vector<unsigned short> ids) {
     } else {
         this->_HasFail = false;
     }
-}
 
-std::vector<Executable>* RunConditionInstruction::getExecutables(bool async) {
-
-    std::vector<Executable> awaiting = {};
-    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
+    this->executables = {Executable([this] () -> const std::vector<Executable>& {
 
         if (this->evaluationValue->isTruthy()) {
             return *Arcadable::getInstance()->instructionSets[this->successSet].getExecutables();
         } else if (this->_HasFail) {
             return *Arcadable::getInstance()->instructionSets[this->failSet].getExecutables();
         }
-        return {};
+        return this->empty;
 
-    }, async, false, awaiting, NULL, NULL)};
-
-    return &executables;
+    }, false, false, NULL, NULL)};
 }

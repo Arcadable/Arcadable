@@ -9,16 +9,17 @@ class Executable {
         std::function<const std::vector<Executable>& ()> action;
         bool async;
         bool await;
-        std::vector<Executable>& awaiting;
+        std::vector<Executable> awaiting;
         Executable* parentAwait;
         std::function<unsigned long int ()> waitMillis;
+        unsigned long int executeOnMillis;
 
         Executable();
         Executable(
             std::function<const std::vector<Executable>& ()> action,
             bool async,
             bool await,
-            std::vector<Executable>& awaiting,
+            //std::vector<Executable>* awaiting,
             Executable* parentAwait,
             std::function<unsigned long int ()> waitMillis
         );

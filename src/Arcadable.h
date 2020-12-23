@@ -53,6 +53,9 @@
 #include "instructions/WaitInstruction.h"
 #include "instructions/ToneInstruction.h"
 
+#include "TeensyTimerTool.h"
+using namespace TeensyTimerTool;
+
 class Arcadable {
 	public:
 		SystemConfig *systemConfig;
@@ -118,9 +121,18 @@ class Arcadable {
 		bool _loading = false;
 		bool _pollImmediately = false;
 		bool _refresh = false;
-		IntervalTimer _mainTimer;
-		IntervalTimer _renderTimer;
-		IntervalTimer _pollTimer;
+
+		PeriodicTimer _mainTimer;
+		PeriodicTimer _renderTimer;
+		PeriodicTimer _pollTimer;
+
+		//IntervalTimer _mainTimer;
+		//IntervalTimer _renderTimer;
+		//IntervalTimer _pollTimer;
+		CallStack _mainCallStack;
+		CallStack _renderCallStack;
+
+
 
 		static void _mainTrigger();
 		static void _renderTrigger();
@@ -138,6 +150,8 @@ class Arcadable {
 			unsigned int readLength,
 			unsigned char *dataReceiver
 		);
+		void _processCallStack(CallStack* callStack);
+		void _processExecutable(Executable* executable, CallStack* callStack);
 
 };
 

@@ -3,6 +3,7 @@
 #include <instructions/Instruction.h>
 #include <values/Value.h>
 #include <vector>
+#include <Executable.h>
 
 class FillRectInstruction: public Instruction {
 	public:
@@ -11,7 +12,6 @@ class FillRectInstruction: public Instruction {
         Value* y1Value;
         Value* x2Value;
         Value* y2Value;
-        std::vector<Executable>* getExecutables(bool async);
         FillRectInstruction();
         FillRectInstruction(
             unsigned short ID,

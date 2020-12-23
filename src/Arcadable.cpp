@@ -2,14 +2,14 @@
 #include "Arcadable.h"
 
 
-Arcadable *Arcadable::_instance = NULL;
-Arcadable *Arcadable::getInstance() {
-	if (!_instance)
+Arcadable* Arcadable::_instance = NULL;
+Arcadable* Arcadable::getInstance() {
+	if (!Arcadable::_instance)
     {
-        _instance = new Arcadable;
+        Arcadable::_instance = new Arcadable;
     }
 
-    return _instance;
+    return Arcadable::_instance;
 }
 
 void Arcadable::_mainTrigger() {
@@ -38,13 +38,16 @@ void Arcadable::setup(
 	}
 	Wire.begin();
  	Wire.setClock(systemConfig->wireClock);
+    this->_mainTimer = PeriodicTimer(GPT1);
+    this->_renderTimer = PeriodicTimer(GPT2);
+    this->_pollTimer = PeriodicTimer(TCK);
 
-    _mainTimer.begin(_mainTrigger, systemConfig->targetMainMillis * 1000);
-    _renderTimer.begin(_renderTrigger, systemConfig->targetRenderMillis * 1000);
+    _mainTimer.begin(_mainTrigger, systemConfig->targetMainMicros);
+    _renderTimer.begin(_renderTrigger, systemConfig->targetRenderMicros);
     _pollTimer.begin(_pollTrigger, 300000);
-    _pollTimer.priority(128);
-    _mainTimer.priority(129);
-    _renderTimer.priority(130);
+   // _pollTimer.priority(128);
+   // _mainTimer.priority(129);
+  //  _renderTimer.priority(130);
 }
 
 
@@ -67,6 +70,8 @@ void Arcadable::poll() {
         _readyToLoad = false;
         if (readRes) {
             _gameLoaded = true;
+            this->_mainCallStack = CallStack();
+            this->_renderCallStack = CallStack();
         } else {
             _gameLoaded = false;
         }
@@ -79,16 +84,24 @@ void Arcadable::poll() {
 }
 
 void Arcadable::mainStep() {
-    if(_gameLoaded && !_loading) {
-        systemConfig->fetchInputValues();
-        mainInstructionSet->getExecutables();
+    if(this->_gameLoaded && !this->_loading) {
+        this->systemConfig->fetchInputValues();
+
+        this->_mainCallStack.prepareStep();
+        this->_mainCallStack.pushfront(this->mainInstructionSet->getExecutables());
+
+        this->_processCallStack(&this->_mainCallStack);
     }
 
 }
 
+
 void Arcadable::renderStep() {
     if(_gameLoaded && !_loading) {
-        Arcadable::getInstance()->renderInstructionSet->getExecutables();
+        this->_renderCallStack.prepareStep();
+        this->_renderCallStack.pushfront(this->renderInstructionSet->getExecutables());
+
+        this->_processCallStack(&this->_renderCallStack);
     } else if (!_loading) {
         canvas->fillScreen(CRGB::Black);
         canvas->setRotation(0);
@@ -141,6 +154,73 @@ void Arcadable::renderStep() {
     FastLED.show();
 
 };
+
+void Arcadable::_processCallStack(CallStack* callStack) {
+    if(callStack->size() > 0) {
+        Executable* executable = callStack->pop();
+        if(executable != NULL) {
+            executable->checkWaitMillis();
+
+            if(executable->executeOnMillis > 0) {
+
+                if(executable->executeOnMillis <= millis()) {
+                    this->_processExecutable(executable, callStack);
+                } else {
+                    callStack->delayScheduledSection(executable);
+                }
+            } else {
+                this->_processExecutable(executable, callStack);
+            }
+        }
+        if (callStack->doProcessMore()) {
+            this->_processCallStack(callStack);
+        }
+    }
+}
+
+void Arcadable::_processExecutable(Executable* executable, CallStack* callStack) {
+    std::vector<Executable> newExecutables = executable->action();
+    if(executable->parentAwait != NULL) {
+        for ( auto item : newExecutables ) {
+            item.withParentAwait(executable->parentAwait);
+        }
+    }
+
+    if(newExecutables.size() > 0) {
+        if(executable->async) {
+            if (executable->awaiting.size() > 0) {
+
+                Executable waitFor = Executable([this, executable] () -> const std::vector<Executable>& {
+                    std::vector<Executable>* returnExecutables = &executable->awaiting;
+                    if(executable->parentAwait != NULL) {
+                        for ( auto &item : *returnExecutables ) {
+                            item.withParentAwait(executable->parentAwait);
+                        }
+                    }
+                    return *returnExecutables;
+                }, true, false, executable->parentAwait, NULL);
+                
+                for ( auto item : newExecutables ) {
+                    item.withParentAwait(&waitFor);
+                }
+                callStack->pushfront(&newExecutables);
+
+
+                std::vector<Executable> waitForArray = {waitFor};
+                if(executable->parentAwait) {
+                    callStack->pushinfrontof(executable->parentAwait, &waitForArray);
+                } else {
+                    callStack->pushback(&waitForArray);
+                }
+            } else {
+                callStack->pushfront(&newExecutables);
+            }
+        } else {
+            callStack->pushfront(&newExecutables);
+        }
+    }
+}
+
 
 
 void Arcadable::_unloadGameLogic() {
@@ -415,7 +495,7 @@ bool Arcadable::_readAndLoadGameLogic() {
                     case InstructionType::Wait: {
                         unsigned short amountValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
                         
-                        this->waitInstructions[id] = WaitInstruction(id, false);
+                        this->waitInstructions[id] = WaitInstruction(id, true);
                         this->instructions[id] = &this->waitInstructions[id];
 
                         instructionParamsMap[id] = { amountValueID };
@@ -474,8 +554,11 @@ bool Arcadable::_readAndLoadGameLogic() {
 
                 switch(type) {
                     case ValueType::number: {
+                        #pragma GCC diagnostic push
+                        #pragma GCC diagnostic ignored "-Wstrict-aliasing"
                         float f;
                         *((int*) &f) = (data[i + 2] << 24) + (data[i + 3] << 16) + (data[i + 4] << 8) + (data[i + 5]);
+                        #pragma GCC diagnostic pop
                         this->numberValues[id] = NumberValue(id, f, 4);
                         this->values[id] = &this->numberValues[id];
                         i += 4;
@@ -643,16 +726,16 @@ bool Arcadable::_readEEPROM(unsigned int startAddress, unsigned int dataLength, 
         _readEEPROMBlock(currentAddress, readLength, readBuffer1);
         _readEEPROMBlock(currentAddress, readLength, readBuffer2);
         _readEEPROMBlock(currentAddress, readLength, readBuffer3);
-        for(char i = 0; i < readLength; i++) {
-            byte first = readBuffer1[i];
-            byte second = readBuffer2[i];
-            byte third = readBuffer3[i];
+        for(unsigned char i = 0; i < readLength; i++) {
+            unsigned char first = readBuffer1[i];
+            unsigned char second = readBuffer2[i];
+            unsigned char third = readBuffer3[i];
             if(!(first == second && second == third)) {
                 corrected++;
             } else {
                 good++;
             }
-            byte corrected =
+            unsigned char corrected =
                 ((((first & 0b10000000) >> 7) + ((second & 0b10000000) >> 7) + ((third & 0b10000000) >> 7) >= 2 ? 1 : 0) << 7) +
                 ((((first & 0b01000000) >> 6) + ((second & 0b01000000) >> 6) + ((third & 0b01000000) >> 6) >= 2 ? 1 : 0) << 6) +
                 ((((first & 0b00100000) >> 5) + ((second & 0b00100000) >> 5) + ((third & 0b00100000) >> 5) >= 2 ? 1 : 0) << 5) +

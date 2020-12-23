@@ -2,6 +2,7 @@
 #define InstructionSet_h
 #include <vector>
 #include <instructions/Instruction.h>
+#include <Executable.h>
 
 class InstructionSet {
     public:
@@ -10,6 +11,9 @@ class InstructionSet {
         
         unsigned short ID;
         bool async;
+        std::vector<Executable> executables;
+        std::vector<Executable> empty;
+        std::vector<Executable> singleUseless;
 
         std::vector<Executable>* getExecutables();
         InstructionSet();
@@ -20,7 +24,7 @@ class InstructionSet {
         );
         void init(std::vector<unsigned short> ids);
     private: 
-        std::vector<Executable>* processAwaiting(std::vector<Executable>& executables);
+        void _processAwaiting(std::vector<Executable>* executables, std::vector<Executable>* out);
 
 
 };

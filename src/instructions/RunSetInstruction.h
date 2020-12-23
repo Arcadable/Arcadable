@@ -3,12 +3,12 @@
 #include <instructions/Instruction.h>
 #include <instructions/InstructionSet.h>
 #include <vector>
+#include <Executable.h>
 
 class RunSetInstruction: public Instruction {
 	public:
         unsigned short set;
 
-        std::vector<Executable>* getExecutables(bool async);
         RunSetInstruction();
         RunSetInstruction(
             unsigned short ID,

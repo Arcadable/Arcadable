@@ -3,6 +3,7 @@
 #include <instructions/Instruction.h>
 #include <values/Value.h>
 #include <vector>
+#include <Executable.h>
 
 class DrawTriangleInstruction: public Instruction {
 	public:
@@ -13,7 +14,6 @@ class DrawTriangleInstruction: public Instruction {
         Value* y2Value;
         Value* x3Value;
         Value* y3Value;
-        std::vector<Executable>* getExecutables(bool async);
         DrawTriangleInstruction();
         DrawTriangleInstruction(
             unsigned short ID,

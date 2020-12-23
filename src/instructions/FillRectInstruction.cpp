@@ -14,11 +14,8 @@ void FillRectInstruction::init(std::vector<unsigned short> ids) {
     this->y1Value = Arcadable::getInstance()->values.find(ids[2])->second;
     this->x2Value = Arcadable::getInstance()->values.find(ids[3])->second;
     this->y2Value = Arcadable::getInstance()->values.find(ids[4])->second; 
-}
-std::vector<Executable>* FillRectInstruction::getExecutables(bool async) {
-  
-    std::vector<Executable> awaiting = {};
-    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
+
+    this->executables = {Executable([this] () -> const std::vector<Executable>& {
 
         int pixel1X = static_cast<int>(this->x1Value->getNumber());
         int pixel1Y = static_cast<int>(this->y1Value->getNumber());
@@ -28,9 +25,7 @@ std::vector<Executable>* FillRectInstruction::getExecutables(bool async) {
         int h = pixel2Y - pixel1Y;
         CRGB drawRectColor = CRGB(this->colorValue->getNumber());
         Arcadable::getInstance()->canvas->fillRect(pixel1X, pixel1Y, w, h, drawRectColor);
-        return {};
+        return this->empty;
 
-    }, async, false, awaiting, NULL, NULL)};
-
-    return &executables;
+    }, false, false, NULL, NULL)};
 }

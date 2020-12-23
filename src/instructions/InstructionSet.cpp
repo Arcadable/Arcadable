@@ -10,79 +10,78 @@ InstructionSet::InstructionSet (
     this->ID = ID;
     this->instructions = std::vector<unsigned short>(this->size);
     this->async = async;
+    this->empty = {};
+    this->singleUseless = {Executable([this] () -> const std::vector<Executable>& { return this->empty; }, this->async, false, NULL, NULL)};
+
 }
 
 InstructionSet::InstructionSet() {}
 void InstructionSet::init(std::vector<unsigned short> ids) {
 
     this->instructions = ids;
-}
-std::vector<Executable>* InstructionSet::getExecutables() {
-    std::vector<Executable> allExecutables = {}; 
+    this->executables = {};
+
     for ( auto instruction : this->instructions ) {
         auto instructionRef = Arcadable::getInstance()->instructions[instruction];
         switch(Arcadable::getInstance()->instructions[instruction]->type) {
             case InstructionType::Wait: {
-                std::vector<Executable> awaiting = {};
                 auto newExecutable = Executable([this, instructionRef] () -> const std::vector<Executable>& {
-                    instructionRef->getExecutables(this->async);
-                }, this->async, instructionRef->await, awaiting, NULL, [instructionRef] () -> unsigned long int {
+                    return *instructionRef->getExecutables(this->async);
+                }, this->async, instructionRef->await, NULL, [instructionRef] () -> unsigned long int {
                     return static_cast<WaitInstruction*>(instructionRef)->amountValue->getNumber();
                 });
-                allExecutables.push_back(newExecutable);
+                this->executables.push_back(newExecutable);
                 break;
             }
             case InstructionType::Tone: {
-                std::vector<Executable> awaiting = {};
                 auto newExecutable = Executable([this, instructionRef] () -> const std::vector<Executable>& {
-                    instructionRef->getExecutables(this->async);
-                }, this->async, false, awaiting, NULL, NULL);
-                std::vector<Executable> awaiting2 = {};
+                    return *instructionRef->getExecutables(this->async);
+                }, this->async, false, NULL, NULL);
                 auto toAwait = Executable([this, instructionRef] () -> const std::vector<Executable>& {
-                    std::vector<Executable> awaiting3 = {};
-                    return {
-                        Executable([] () -> const std::vector<Executable>& { return {}; }, this->async, false, awaiting3, NULL, NULL)
-                    };
-                }, this->async, true, awaiting2, NULL, [instructionRef] () -> unsigned long int {
+                    return this->singleUseless;
+                }, this->async, true, NULL, [instructionRef] () -> unsigned long int {
                     return static_cast<ToneInstruction*>(instructionRef)->durationValue->getNumber();
                 });
-                allExecutables.push_back(newExecutable);
-                allExecutables.push_back(toAwait);
+                this->executables.push_back(newExecutable);
+                this->executables.push_back(toAwait);
 
                 break;
             }
             default: {
-                std::vector<Executable> awaiting = {};
                 auto newExecutable = Executable([this, instructionRef] () -> const std::vector<Executable>& {
-                    instructionRef->getExecutables(this->async);
-                }, this->async, instructionRef->await, awaiting, NULL, NULL);
-                allExecutables.push_back(newExecutable);
+                    return *instructionRef->getExecutables(this->async);
+                }, this->async, instructionRef->await, NULL, NULL);
+                this->executables.push_back(newExecutable);
                 break;
             }
         }
 	}
-
-    return this->processAwaiting(allExecutables);
+    std::vector<Executable> processed = {};
+    this->_processAwaiting(&this->executables, &processed);
+    this->executables = processed;
 
 }
-
-std::vector<Executable>* InstructionSet::processAwaiting(std::vector<Executable>& executables) {
+std::vector<Executable>* InstructionSet::getExecutables() {
+    return &this->executables;
+}
+void InstructionSet::_processAwaiting(std::vector<Executable>* executables, std::vector<Executable>* out) {
 
     Executable* awaitExecutable = NULL;
-    std::vector<Executable> processedExecutables = {}; 
-    for ( auto executable : executables ) {
+    for ( auto &executable : *executables ) {
         if(awaitExecutable != NULL) {
             awaitExecutable->awaiting.push_back(executable);
         } else {
             if(executable.await) {
                 awaitExecutable = &executable;
             }
-            processedExecutables.push_back(executable);
+            out->push_back(executable);
         }
     }
 
     if(awaitExecutable != NULL) {
-        awaitExecutable->awaiting = *this->processAwaiting(awaitExecutable->awaiting);
+        std::vector<Executable> processed = {};
+        this->_processAwaiting(&awaitExecutable->awaiting, &processed);
+        awaitExecutable->awaiting = processed;
+
     }
-    return &processedExecutables;
 }

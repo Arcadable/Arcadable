@@ -3,13 +3,13 @@
 #include <instructions/Instruction.h>
 #include <values/Value.h>
 #include <vector>
+#include <Executable.h>
 
 class DrawPixelInstruction: public Instruction {
 	public:
         Value* colorValue;
         Value* xValue;
         Value* yValue;
-        std::vector<Executable>* getExecutables(bool async);
         DrawPixelInstruction();
         DrawPixelInstruction(
             unsigned short ID,

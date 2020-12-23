@@ -3,6 +3,7 @@
 #include <instructions/Instruction.h>
 #include "values/Value.h"
 #include <vector>
+#include <Executable.h>
 
 class DrawCircleInstruction: public Instruction {
 	public:
@@ -10,7 +11,6 @@ class DrawCircleInstruction: public Instruction {
         Value* radiusValue;
         Value* xValue;
         Value* yValue;
-        std::vector<Executable>* getExecutables(bool async);
         DrawCircleInstruction();
         DrawCircleInstruction(
             unsigned short ID,

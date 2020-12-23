@@ -13,10 +13,8 @@ void DrawTextInstruction::init(std::vector<unsigned short> ids) {
     this->textValue = Arcadable::getInstance()->values.find(ids[2])->second;
     this->xValue = Arcadable::getInstance()->values.find(ids[3])->second;
     this->yValue = Arcadable::getInstance()->values.find(ids[4])->second;
-}
-std::vector<Executable>* DrawTextInstruction::getExecutables(bool async) {
-    std::vector<Executable> awaiting = {};
-    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
+
+    this->executables = {Executable([this] () -> const std::vector<Executable>& {
 
         int scaleValue = static_cast<int>(this->scaleValue->getNumber());
         int xValue = static_cast<int>(this->xValue->getNumber());
@@ -41,9 +39,7 @@ std::vector<Executable>* DrawTextInstruction::getExecutables(bool async) {
         Arcadable::getInstance()->canvas->setTextSize(scaleValue);
         Arcadable::getInstance()->canvas->setTextWrap(false);
         Arcadable::getInstance()->canvas->print(text.data());
-        return {};
+        return this->empty;
 
-    }, async, false, awaiting, NULL, NULL)};
-
-    return &executables;
+    }, false, false, NULL, NULL)};
 }

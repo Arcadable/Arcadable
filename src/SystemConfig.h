@@ -17,8 +17,8 @@ class SystemConfig {
     public:
         unsigned short int screenWidth;
         unsigned short int screenHeight;
-        unsigned short int targetMainMillis;
-        unsigned short int targetRenderMillis;
+        unsigned short int targetMainMicros;
+        unsigned short int targetRenderMicros;
         unsigned long int startMillis;
         bool layoutIsZigZag;
         unsigned int wireClock;

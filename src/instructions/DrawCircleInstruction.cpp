@@ -13,18 +13,13 @@ void DrawCircleInstruction::init(std::vector<unsigned short> ids) {
     this->xValue = Arcadable::getInstance()->values.find(ids[2])->second;
     this->yValue = Arcadable::getInstance()->values.find(ids[3])->second;
 
-}
-std::vector<Executable>* DrawCircleInstruction::getExecutables(bool async) {
-  
-    std::vector<Executable> awaiting = {};
-    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
+    this->executables = {Executable([this] () -> const std::vector<Executable>& {
         int radiusValue = static_cast<int>(this->radiusValue->getNumber());
         int xValue = static_cast<int>(this->xValue->getNumber());
         int yValue = static_cast<int>(this->yValue->getNumber());
 
         CRGB drawCircleColor = CRGB(this->colorValue->getNumber());
         Arcadable::getInstance()->canvas->drawCircle(xValue, yValue, radiusValue, drawCircleColor);
-        return {};
-    }, async, false, awaiting, NULL, NULL)};
-    return &executables;
+        return this->empty;
+    }, false, false, NULL, NULL)};
 }

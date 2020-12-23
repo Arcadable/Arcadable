@@ -1,6 +1,7 @@
 #pragma once
 #define Instruction_h
 #include <vector>
+#include <Executable.h>
 
 enum InstructionType {
     MutateValue,
@@ -32,8 +33,16 @@ class Instruction {
         InstructionType type;
         unsigned short ID;
         bool await;
-        virtual std::vector<Executable>* getExecutables(bool async);
+
+       // std::vector<Executable> awaiting;
+        std::vector<Executable> executables;
+        std::vector<Executable> empty;
+
+        std::vector<Executable>* getExecutables(bool async);
         virtual void init(std::vector<unsigned short> ids);
+
+
+
         Instruction();
         Instruction(
             unsigned short ID,

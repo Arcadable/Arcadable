@@ -10,13 +10,8 @@ WaitInstruction::WaitInstruction() {}
 
 void WaitInstruction::init(std::vector<unsigned short> ids) {
     this->amountValue = Arcadable::getInstance()->values.find(ids[0])->second;
-}
-std::vector<Executable>* WaitInstruction::getExecutables(bool async) {
+    this->executables = {Executable([this] () -> const std::vector<Executable>& {
+        return this->empty;
+    }, false, false, NULL, NULL)};
 
-    std::vector<Executable> awaiting = {};
-    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
-        return {};
-    }, async, false, awaiting, NULL, NULL)};
-
-    return &executables;
 }

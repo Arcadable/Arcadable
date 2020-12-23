@@ -3,6 +3,7 @@
 #include <instructions/Instruction.h>
 #include <values/Value.h>
 #include <vector>
+#include <Executable.h>
 
 class DrawRectInstruction: public Instruction {
 	public:
@@ -11,7 +12,6 @@ class DrawRectInstruction: public Instruction {
         Value* y1Value;
         Value* x2Value;
         Value* y2Value;
-        std::vector<Executable>* getExecutables(bool async);
         DrawRectInstruction();
         DrawRectInstruction(
             unsigned short ID,

@@ -3,12 +3,12 @@
 #include <instructions/Instruction.h>
 #include <values/Value.h>
 #include <vector>
+#include <Executable.h>
 
 class SetRotationInstruction: public Instruction {
 	public:
         Value* rotationValue;
 
-        std::vector<Executable>* getExecutables(bool async);
         SetRotationInstruction();
         SetRotationInstruction(
             unsigned short ID,

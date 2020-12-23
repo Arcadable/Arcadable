@@ -2,8 +2,7 @@
 #include "Arcadable.h"
 
 ImageValue::ImageValue(
-    unsigned short ID,
-    bool await
+    unsigned short ID
 ) : Value(ID, ValueType::image) {
     this->isNumberType = false;
 }

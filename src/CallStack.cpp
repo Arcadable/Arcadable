@@ -1,6 +1,6 @@
 #include "CallStack.h"
 
-
+CallStack::CallStack () { }
 CallStack::CallStack(
     unsigned long int capacity
 ) {
@@ -15,15 +15,26 @@ void CallStack::pushback(std::vector<Executable>* items) {
         Serial.println("Stack has reached max capacity.");
     }
     for ( auto &item : *items ) {
-        this->storage.push_back(item);
+        this->storage.push_back(&item);
     }
 }
 void CallStack::pushinfrontof(Executable* infrontof, std::vector<Executable>* items) {
     if (this->size() >= this->capacity) {
         Serial.println("Stack has reached max capacity.");
     }
+    std::list<Executable*>::iterator it;
+
+    it = this->storage.begin();
+    for(auto executable : this->storage) {
+        if(executable == infrontof) {
+            break;
+        } else {
+            ++it; 
+        }
+    }
+
     for ( auto &item : *items ) {
-        this->storage.insert(infrontof, item);
+        this->storage.insert(it, &item);
     }
 }
 
@@ -31,14 +42,16 @@ void CallStack::pushfront(std::vector<Executable>* items) {
     if (this->size() >= this->capacity) {
         Serial.println("Stack has reached max capacity.");
     }
-    Executable* front = this->storage.front();
+    std::list<Executable*>::iterator it;
+    it = this->storage.begin();
     for ( auto &item : *items ) {
-        this->storage.insert(front, item);
+        this->storage.insert(it, &item);
     }
 }
 void CallStack::delayScheduledSection(Executable* parent) {
-    this->storage.erase(parent);
-    this->push_back(parent);
+    this->storage.remove(parent);
+    std::vector<Executable> array = {*parent};
+    this->pushback(&array);
     this->delayed++;
     if(!!parent->parentAwait) {
         this->delayScheduledSection(parent->parentAwait);

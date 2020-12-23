@@ -3,6 +3,7 @@
 #include <instructions/Instruction.h>
 #include <values/Value.h>
 #include <vector>
+#include <Executable.h>
 
 class ToneInstruction: public Instruction {
 	public:
@@ -10,7 +11,6 @@ class ToneInstruction: public Instruction {
         Value* frequencyValue;
         Value* durationValue;
 
-        std::vector<Executable>* getExecutables(bool async);
         ToneInstruction();
         ToneInstruction(
             unsigned short ID,

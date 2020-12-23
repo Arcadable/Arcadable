@@ -10,18 +10,22 @@ ToneInstruction::ToneInstruction() {}
 
 void ToneInstruction::init(std::vector<unsigned short> ids) {
     this->volumeValue = Arcadable::getInstance()->values.find(ids[0])->second;
-    this->frequencyValue = Arcadable::getInstance()->values.find(ids[0])->second;
-    this->durationValue = Arcadable::getInstance()->values.find(ids[0])->second;
-}
-std::vector<Executable>* ToneInstruction::getExecutables(bool async) {
+    this->frequencyValue = Arcadable::getInstance()->values.find(ids[1])->second;
+    this->durationValue = Arcadable::getInstance()->values.find(ids[2])->second;
+    
+    this->executables = {Executable([this] () -> const std::vector<Executable>& {
 
-    std::vector<Executable> awaiting = {};
-    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
+        double volume = this->volumeValue->getNumber();
+        double frequency = this->frequencyValue->getNumber();
+        double duration = this->durationValue->getNumber();
 
-        return {};
+        analogWrite(output, 127);
+        Wait for 1,136 microseconds
+        analogWrite(output, 0);
+        Wait for 1,136 microseconds
+
+        return this->empty;
 
 
-    }, async, false, awaiting, NULL, NULL)};
-
-    return &executables;
+    }, false, false, NULL, NULL)};
 }

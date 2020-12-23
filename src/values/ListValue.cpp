@@ -2,8 +2,7 @@
 #include "Arcadable.h"
 #include "values/ListDeclaration.h"
 ListValue::ListValue (
-    unsigned short ID,
-    bool await
+    unsigned short ID
 ) : Value(ID, ValueType::listValue) {
     this->isNumberType = false;
 }

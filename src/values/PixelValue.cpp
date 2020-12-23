@@ -2,8 +2,7 @@
 #include "Arcadable.h"
 
 PixelValue::PixelValue(
-    unsigned short ID,
-    bool await
+    unsigned short ID
 ) : Value(ID, ValueType::pixelIndex) {
     this->isNumberType = true;
 }

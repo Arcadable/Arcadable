@@ -4,11 +4,12 @@
 #include <list>
 #include <functional>
 #include "Arduino.h"
-
+#include "Executable.h"
 class CallStack {
     public:
-        std::list<Executable> storage;
+        std::list<Executable*> storage;
         unsigned long int delayed; 
+        unsigned long int capacity; 
 
         CallStack();
         CallStack(

@@ -10,15 +10,12 @@ DebugLogInstruction::DebugLogInstruction() {}
 
 void DebugLogInstruction::init(std::vector<unsigned short> ids) {
     this->logValue = Arcadable::getInstance()->values.find(ids[0])->second;
-}
-std::vector<Executable>* DebugLogInstruction::getExecutables(bool async) {
-    std::vector<Executable> awaiting = {};
-    std::vector<Executable> executables = {Executable([this] () -> const std::vector<Executable>& {
+
+    this->executables = {Executable([this] () -> const std::vector<Executable>& {
         Serial.print("debug.log - ");
         this->print(this->logValue);
-        return {};
-    }, async, false, awaiting, NULL, NULL)};
-    return &executables;
+        return this->empty;
+    }, false, false, NULL, NULL)};
 }
 
 void DebugLogInstruction::print(Value *v) {
