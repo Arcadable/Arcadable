@@ -78,7 +78,8 @@ SystemConfig::SystemConfig(
     unsigned char numAnalogInputs,
     unsigned short int analogInputPin,
     unsigned short int analogMaxValue,
-    std::vector<unsigned char> *analogSignalPins
+    std::vector<unsigned char> *analogSignalPins,
+    std::vector<unsigned char> *speakerOutputPins
 ) {
     this->screenWidth = screenWidth;
     this->screenHeight = screenHeight;
@@ -97,6 +98,7 @@ SystemConfig::SystemConfig(
     this->regClockInputPin = regClockInputPin;
     this->numAnalogInputs = numAnalogInputs;
     this->analogSignalPins = analogSignalPins;
+    this->speakerOutputPins = speakerOutputPins;
     this->analogInputPin = analogInputPin;
     this->analogMaxValue = analogMaxValue;
 

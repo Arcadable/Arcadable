@@ -7,6 +7,7 @@
 
 class ToneInstruction: public Instruction {
 	public:
+        Value* speakerOutputValue;
         Value* volumeValue;
         Value* frequencyValue;
         Value* durationValue;

@@ -48,6 +48,11 @@ void Arcadable::setup(
    // _pollTimer.priority(128);
    // _mainTimer.priority(129);
   //  _renderTimer.priority(130);
+
+
+    // Necessary for tone volume resolution stuff https://www.pjrc.com/teensy/td_pulse.html
+    // Will allow for 0 - 1023 resolution, where 4095 is always high
+    analogWriteResolution(10);
 }
 
 
@@ -503,18 +508,20 @@ bool Arcadable::_readAndLoadGameLogic() {
                         break;
                     }
                     case InstructionType::Tone: {
-                        unsigned short volumeValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
-                        unsigned short frequencyValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
-                        unsigned short durationValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
+                        unsigned short speakerOutputValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
+                        unsigned short volumeValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
+                        unsigned short frequencyValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
+                        unsigned short durationValueID = static_cast<unsigned short>((data[i + 8] << 8) + data[i + 9]);
 
                         this->toneInstructions[id] = ToneInstruction(id, false);
                         this->instructions[id] = &this->toneInstructions[id];
 
-                        instructionParamsMap[id] = { volumeValueID, frequencyValueID, durationValueID };
-                        i += 6;
+                        instructionParamsMap[id] = {speakerOutputValueID, volumeValueID, frequencyValueID, durationValueID };
+                        i += 8;
                         break;
                     }
                     case InstructionType::AwaitedTone: {
+                        unsigned short speakerOutputValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
                         unsigned short volumeValueID = static_cast<unsigned short>((data[i + 2] << 8) + data[i + 3]);
                         unsigned short frequencyValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
                         unsigned short durationValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
@@ -522,8 +529,8 @@ bool Arcadable::_readAndLoadGameLogic() {
                         this->toneInstructions[id] = ToneInstruction(id, true);
                         this->instructions[id] = &this->toneInstructions[id];
 
-                        instructionParamsMap[id] = { volumeValueID, frequencyValueID, durationValueID };
-                        i += 6;
+                        instructionParamsMap[id] = {speakerOutputValueID, volumeValueID, frequencyValueID, durationValueID };
+                        i += 8;
                         break;
                     }
                     case InstructionType::InstructionSetType: {
@@ -613,6 +620,14 @@ bool Arcadable::_readAndLoadGameLogic() {
                         
                         this->analogInputValues[id] = AnalogInputValue(id, index);
                         this->values[id] = &this->analogInputValues[id];
+                        i += 1;
+                        break;
+                    }
+                    case ValueType::speakerOutputPointer: {
+                        unsigned short index = static_cast<unsigned short>(data[i + 2]);
+                        
+                        this->speakerOutputValues[id] = SpeakerOutputValue(id, index);
+                        this->values[id] = &this->speakerOutputValues[id];
                         i += 1;
                         break;
                     }

@@ -15,7 +15,8 @@ enum ValueType {
     text,
     evaluation,
     image,
-	data
+	data,
+    speakerOutputPointer
 };
 
 

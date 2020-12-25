@@ -20,7 +20,7 @@
 #include "values/Value.h"
 #include "instructions/Instruction.h"
 #include "instructions/InstructionSet.h"
-#include "fastledGFX/FastLED_GFX.h"
+#include "_fastledGFX/FastLED_GFX.h"
 
 #include "values/NumberValue.h"
 #include "values/TextValue.h"
@@ -33,6 +33,7 @@
 #include "values/AnalogInputValue.h"
 #include "values/DataValue.h"
 #include "values/ImageValue.h"
+#include "values/SpeakerOutputValue.h"
 
 #include "instructions/MutateValueInstruction.h"
 #include "instructions/RunConditionInstruction.h"
@@ -71,6 +72,7 @@ class Arcadable {
 		std::map<unsigned short int, EvaluationValue> evaluationValues;
 		std::map<unsigned short int, DataValue> dataValues;
 		std::map<unsigned short int, ImageValue> imageValues;
+		std::map<unsigned short int, SpeakerOutputValue> speakerOutputValues;
 
 		std::map<unsigned short int, MutateValueInstruction> mutateValueInstructions;
 		std::map<unsigned short int, RunConditionInstruction> runConditionInstructions;

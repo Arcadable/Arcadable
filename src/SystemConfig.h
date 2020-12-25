@@ -35,6 +35,7 @@ class SystemConfig {
         unsigned short int analogMaxValue;
         unsigned int analogValueModifier;
         std::vector<unsigned char> *analogSignalPins;
+        std::vector<unsigned char> *speakerOutputPins;
         std::map<unsigned char, bool> digitalInputValues;
         std::map<unsigned char, unsigned short int> analogInputValues;
         SystemConfig();
@@ -57,7 +58,9 @@ class SystemConfig {
             unsigned char numAnalogInputs,
             unsigned short int analogInputPin,
             unsigned short int analogMaxValue,
-            std::vector<unsigned char> *analogSignalPins
+            std::vector<unsigned char> *analogSignalPins,
+            std::vector<unsigned char> *speakerOutputPins
+
         );
 
         void fetchInputValues();
