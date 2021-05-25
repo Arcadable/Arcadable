@@ -1,21 +1,41 @@
 #include "DrawPixelInstruction.h"
-#include "Arcadable.h"
+#include "../executable.h"
+#include "../gameState.h"
 
 DrawPixelInstruction::DrawPixelInstruction (
-    unsigned short ID
-) : Instruction(ID, InstructionType::DrawPixel) {}
+    unsigned short ID,
+    bool await,
+    DisplayRunner *display,
+    GameState *game
+) : Instruction(ID, InstructionType::DrawPixel, await) {
+    this->display = display;
+    this->game = game;
+
+}
 DrawPixelInstruction::DrawPixelInstruction() {}
 
 void DrawPixelInstruction::init(std::vector<unsigned short> ids) {
-    this->colorValue = Arcadable::getInstance()->values.find(ids[0])->second;
-    this->xValue = Arcadable::getInstance()->values.find(ids[1])->second;
-    this->yValue = Arcadable::getInstance()->values.find(ids[2])->second;
+    this->colorValue = this->game->values.find(ids[0])->second;
+    this->xValue = this->game->values.find(ids[1])->second;
+    this->yValue = this->game->values.find(ids[2])->second;
+
+    
+
 }
-void DrawPixelInstruction::execute() {
-  
+
+std::vector<unsigned int>* DrawPixelInstruction::action(bool async) {
+
     int pixelX = static_cast<int>(this->xValue->getNumber());
     int pixelY = static_cast<int>(this->yValue->getNumber());
 
     CRGB pixelColor = CRGB(this->colorValue->getNumber());
-    Arcadable::getInstance()->canvas->drawPixel(pixelX, pixelY, pixelColor);
+    this->display->canvas.drawPixel(pixelX, pixelY, pixelColor);
+    return &Executable::empty;
+
+
+
+
+}
+double DrawPixelInstruction::getWaitAmount() {
+    return 0;
 }

@@ -1,10 +1,12 @@
 #pragma once
 #define ImageValue_h
-#include <values/Value.h>
+#include "Value.h"
 #include <vector>
+class GameState;
 
 class ImageValue: public Value {
 	public:
+        GameState *game;
         Value* data;
         Value* width;
         Value* height;
@@ -18,6 +20,7 @@ class ImageValue: public Value {
         void init(std::vector<unsigned short> ids);
         ImageValue();
         ImageValue(
-            unsigned short ID
+            unsigned short ID,
+            GameState *game
         );
 };

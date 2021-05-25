@@ -38,21 +38,11 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#include "Arcadable.h"
-#include <FastLED.h>
+#ifndef _FASTLED_GFX_CPP
+#define _FASTLED_GFX_CPP
+#include "../displayRunner.h"
 #include "FastLED_GFX.h"
 #include "glcdfont.c"
-#ifdef __AVR__
- #include <avr/pgmspace.h>
- #define pgm_read_pointer(addr) ((void *)pgm_read_word(addr))
-#elif defined(ESP8266)
- #include <pgmspace.h>
- #define pgm_read_pointer(addr) ((void *)pgm_read_dword(addr))
-#else
- #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
- #define pgm_read_word(addr) (*(const unsigned short *)(addr))
- #define pgm_read_pointer(addr) ((void *)pgm_read_word(addr))
-#endif
 
 #ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))
@@ -369,12 +359,12 @@ void FastLED_GFX::drawImage(int16_t x, int16_t y, int16_t w, int16_t h, CRGB k, 
 // foreground color (unset bits are transparent).
 void FastLED_GFX::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, CRGB color) {
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t byte;
+  uint8_t byte = 0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++) {
       if(i & 7) byte <<= 1;
-      else      byte   = pgm_read_byte(bitmap + j * byteWidth + i / 8);
+      else      byte   = (*(const unsigned char *)(bitmap + j * byteWidth + i / 8));
       if(byte & 0x80) drawPixel(x+i, y+j, color);
     }
   }
@@ -385,12 +375,12 @@ void FastLED_GFX::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_
 // foreground (for set bits) and background (for clear bits) colors.
 void FastLED_GFX::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, CRGB color, CRGB bg) {
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t byte;
+  uint8_t byte = 0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++ ) {
       if(i & 7) byte <<= 1;
-      else      byte   = pgm_read_byte(bitmap + j * byteWidth + i / 8);
+      else      byte   = (*(const unsigned char *)(bitmap + j * byteWidth + i / 8));
       if(byte & 0x80) drawPixel(x+i, y+j, color);
       else            drawPixel(x+i, y+j, bg);
     }
@@ -402,7 +392,7 @@ void FastLED_GFX::drawBitmap(int16_t x, int16_t y,
  uint8_t *bitmap, int16_t w, int16_t h, CRGB color) {
 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t byte;
+  uint8_t byte = 0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++ ) {
@@ -418,7 +408,7 @@ void FastLED_GFX::drawBitmap(int16_t x, int16_t y,
  uint8_t *bitmap, int16_t w, int16_t h, CRGB color, CRGB bg) {
 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t byte;
+  uint8_t byte = 0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++ ) {
@@ -437,12 +427,12 @@ void FastLED_GFX::drawXBitmap(int16_t x, int16_t y,
  const uint8_t *bitmap, int16_t w, int16_t h, CRGB color) {
 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t byte;
+  uint8_t byte = 0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++ ) {
       if(i & 7) byte >>= 1;
-      else      byte   = pgm_read_byte(bitmap + j * byteWidth + i / 8);
+      else      byte   = (*(const unsigned char *)(bitmap + j * byteWidth + i / 8));
       if(byte & 0x01) drawPixel(x+i, y+j, color);
     }
   }
@@ -471,21 +461,29 @@ size_t FastLED_GFX::write(uint8_t c) {
     if(c == '\n') {
       cursor_x  = 0;
       cursor_y += (int16_t)textsize *
-                  (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+                  (uint8_t)(*(const unsigned char *)(&gfxFont->yAdvance));
     } else if(c != '\r') {
-      uint8_t first = pgm_read_byte(&gfxFont->first);
+      uint8_t first = (*(const unsigned char *)(&gfxFont->first));
       if((c >= first) && (c <= (uint8_t)pgm_read_byte(&gfxFont->last))) {
-        uint8_t   c2    = c - pgm_read_byte(&gfxFont->first);
-        GFXglyph *glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c2]);
-        uint8_t   w     = pgm_read_byte(&glyph->width),
-                  h     = pgm_read_byte(&glyph->height);
+        uint8_t   c2    = c - (*(const unsigned char *)(&gfxFont->first));
+
+        
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+        #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+        GFXglyph *glyph = &(((GFXglyph *)((void *)(*(const unsigned short *)(&gfxFont->glyph))))[c2]);
+        #pragma GCC diagnostic pop
+
+
+        uint8_t   w     = (*(const unsigned char *)(&glyph->width)),
+                  h     = (*(const unsigned char *)(&glyph->height));
         if((w > 0) && (h > 0)) { // Is there an associated bitmap?
-          int16_t xo = (int8_t)pgm_read_byte(&glyph->xOffset); // sic
+          int16_t xo = (int8_t)(*(const unsigned char *)(&glyph->xOffset)); // sic
           if(wrap && ((cursor_x + textsize * (xo + w)) >= _width)) {
             // Drawing character would go off right edge; wrap to new line
             cursor_x  = 0;
             cursor_y += (int16_t)textsize *
-                        (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+                        (uint8_t)(*(const unsigned char *)(&gfxFont->yAdvance));
           }
           drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
         }
@@ -515,7 +513,7 @@ void FastLED_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 
     for(int8_t i=0; i<6; i++ ) {
       uint8_t line;
-      if(i < 5) line = pgm_read_byte(font+(c*5)+i);
+      if(i < 5) line = (*(const unsigned char *)(font+(c*5)+i));
       else      line = 0x0;
       for(int8_t j=0; j<8; j++, line >>= 1) {
         if(line & 0x1) {
@@ -534,18 +532,22 @@ void FastLED_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
     // newlines, returns, non-printable characters, etc.  Calling drawChar()
     // directly with 'bad' characters of font may cause mayhem!
 
-    c -= pgm_read_byte(&gfxFont->first);
-    GFXglyph *glyph  = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
-    uint8_t  *bitmap = (uint8_t *)pgm_read_pointer(&gfxFont->bitmap);
+    c -= (*(const unsigned char *)(&gfxFont->first));
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+    #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+    GFXglyph *glyph  = &(((GFXglyph *)((void *)(*(const unsigned short *)(&gfxFont->glyph))))[c]);
+    uint8_t  *bitmap = (uint8_t *)((void *)(*(const unsigned short *)(&gfxFont->bitmap)));
+    #pragma GCC diagnostic pop
 
-    uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
-    uint8_t  w  = pgm_read_byte(&glyph->width),
-             h  = pgm_read_byte(&glyph->height),
-             xa = pgm_read_byte(&glyph->xAdvance);
-    int8_t   xo = pgm_read_byte(&glyph->xOffset),
-             yo = pgm_read_byte(&glyph->yOffset);
-    uint8_t  xx, yy, bits, bit = 0;
-    int16_t  xo16, yo16;
+    uint16_t bo = (*(const unsigned short *)(&glyph->bitmapOffset));
+    uint8_t  w  = (*(const unsigned char *)(&glyph->width)),
+             h  = (*(const unsigned char *)(&glyph->height));//,
+             //xa = (*(const unsigned char *)(&glyph->xAdvance));
+    int8_t   xo = (*(const unsigned char *)(&glyph->xOffset)),
+             yo = (*(const unsigned char *)(&glyph->yOffset));
+    uint8_t  xx, yy, bits = 0, bit = 0;
+    int16_t  xo16 = 0, yo16 = 0;
 
     if(size > 1) {
       xo16 = xo;
@@ -573,7 +575,7 @@ void FastLED_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
     for(yy=0; yy<h; yy++) {
       for(xx=0; xx<w; xx++) {
         if(!(bit++ & 7)) {
-          bits = pgm_read_byte(&bitmap[bo++]);
+          bits = (*(const unsigned char *)(&bitmap[bo++]));
         }
         if(bits & 0x80) {
           if(size == 1) {
@@ -679,25 +681,30 @@ void FastLED_GFX::getTextBounds(char *str, int16_t x, int16_t y,
   if(gfxFont) {
 
     GFXglyph *glyph;
-    uint8_t   first = pgm_read_byte(&gfxFont->first),
-              last  = pgm_read_byte(&gfxFont->last),
+    uint8_t   first = (*(const unsigned char *)(&gfxFont->first)),
+              last  = (*(const unsigned char *)(&gfxFont->last)),
               gw, gh, xa;
     int8_t    xo, yo;
     int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
               gx1, gy1, gx2, gy2, ts = (int16_t)textsize,
-              ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+              ya = ts * (uint8_t)(*(const unsigned char *)(&gfxFont->yAdvance));
 
     while((c = *str++)) {
       if(c != '\n') { // Not a newline
         if(c != '\r') { // Not a carriage return, is normal char
           if((c >= first) && (c <= last)) { // Char present in current font
             c    -= first;
-            glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
-            gw    = pgm_read_byte(&glyph->width);
-            gh    = pgm_read_byte(&glyph->height);
-            xa    = pgm_read_byte(&glyph->xAdvance);
-            xo    = pgm_read_byte(&glyph->xOffset);
-            yo    = pgm_read_byte(&glyph->yOffset);
+
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+            #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+            glyph = &(((GFXglyph *)((void *)(*(const unsigned short *)(&gfxFont->glyph))))[c]);
+            #pragma GCC diagnostic pop
+            gw    = (*(const unsigned char *)(&glyph->width));
+            gh    = (*(const unsigned char *)(&glyph->height));
+            xa    = (*(const unsigned char *)(&glyph->xAdvance));
+            xo    = (*(const unsigned char *)(&glyph->xOffset));
+            yo    = (*(const unsigned char *)(&glyph->yOffset));
             if(wrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
               // Line wrap
               x  = 0;  // Reset x to 0
@@ -768,25 +775,29 @@ void FastLED_GFX::getTextBounds(const __FlashStringHelper *str,
   if(gfxFont) {
 
     GFXglyph *glyph;
-    uint8_t   first = pgm_read_byte(&gfxFont->first),
-              last  = pgm_read_byte(&gfxFont->last),
+    uint8_t   first = (*(const unsigned char *)(&gfxFont->first)),
+              last  = (*(const unsigned char *)(&gfxFont->last)),
               gw, gh, xa;
     int8_t    xo, yo;
     int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
               gx1, gy1, gx2, gy2, ts = (int16_t)textsize,
-              ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+              ya = ts * (uint8_t)(*(const unsigned char *)(&gfxFont->yAdvance));
 
     while((c = pgm_read_byte(s++))) {
       if(c != '\n') { // Not a newline
         if(c != '\r') { // Not a carriage return, is normal char
           if((c >= first) && (c <= last)) { // Char present in current font
             c    -= first;
-            glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
-            gw    = pgm_read_byte(&glyph->width);
-            gh    = pgm_read_byte(&glyph->height);
-            xa    = pgm_read_byte(&glyph->xAdvance);
-            xo    = pgm_read_byte(&glyph->xOffset);
-            yo    = pgm_read_byte(&glyph->yOffset);
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+            #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+            glyph = &(((GFXglyph *)((void *)(*(const unsigned short *)(&gfxFont->glyph))))[c]);
+            #pragma GCC diagnostic pop
+            gw    = (*(const unsigned char *)(&glyph->width));
+            gh    = (*(const unsigned char *)(&glyph->height));
+            xa    = (*(const unsigned char *)(&glyph->xAdvance));
+            xo    = (*(const unsigned char *)(&glyph->xOffset));
+            yo    = (*(const unsigned char *)(&glyph->yOffset));
             if(wrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
               // Line wrap
               x  = 0;  // Reset x to 0
@@ -937,7 +948,9 @@ boolean FastLED_GFX_Button::justReleased() { return (!currstate && laststate); }
 // GFXcanvas requires 2 bytes per pixel (no scanline pad).
 // NOT EXTENSIVELY TESTED YET.  MAY CONTAIN WORST BUGS KNOWN TO HUMANKIND.
 
-GFXcanvas::GFXcanvas(uint16_t w, uint16_t h) : FastLED_GFX(w, h) { }
+GFXcanvas::GFXcanvas(uint16_t w, uint16_t h, DisplayRunner *d) : FastLED_GFX(w, h) {
+  this->display = d;
+}
 
 
 GFXcanvas::~GFXcanvas(void) { }
@@ -961,10 +974,11 @@ void GFXcanvas::drawPixel(int16_t x, int16_t y, CRGB color) {
     y = HEIGHT - 1 - t;
     break;
   }
-  Arcadable::getInstance()->pixelsBuffer[x + y * WIDTH] = color;
+  this->display->renderLeds[x + y * WIDTH] = color;
 }
 
 void GFXcanvas::fillScreen(CRGB color) {
   uint16_t i, pixels = WIDTH * HEIGHT;
-  for(i=0; i<pixels; i++) Arcadable::getInstance()->pixelsBuffer[i] = color;
+  for(i=0; i<pixels; i++) this->display->renderLeds[i] = color;
 }
+#endif

@@ -1,6 +1,5 @@
 #include "SystemConfigValue.h"
-#include "Arcadable.h"
-
+#include <Arduino.h>
 SystemConfigValue::SystemConfigValue(
     unsigned short ID,
     SystemConfigType configType
@@ -10,9 +9,25 @@ SystemConfigValue::SystemConfigValue(
 }
 SystemConfigValue::SystemConfigValue() {}
 
-void SystemConfigValue::init(std::vector<unsigned short> ids) {}
+void SystemConfigValue::init(std::vector<unsigned short> ids) {
+    this->startTime = millis();
+}
 double SystemConfigValue::getNumber() {
-    return Arcadable::getInstance()->systemConfig->get(this->configType);
+    switch(this->configType) {
+        case SystemConfigType::screenWidth: {
+            return SCREEN_WIDTH;
+        }
+        case SystemConfigType::screenHeight: {
+            return SCREEN_HEIGHT;
+        }
+        case SystemConfigType::currentMillis: {
+            return millis() - this->startTime;
+        }
+        case SystemConfigType::isZigZag: {
+            return LAYOUT_IS_ZIG_ZAG ? (double)1 : (double)0;
+        }
+        default: return 0;
+    }
 }
 void SystemConfigValue::setNumber(double newValue) { }
 bool SystemConfigValue::isTruthy() {

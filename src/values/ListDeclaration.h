@@ -1,7 +1,8 @@
 #pragma once
 #define ListDeclaration_h
 #include <vector>
-#include <values/Value.h>
+#include "Value.h"
+class GameState;
 
 class ListDeclaration: public Value {
 	public:

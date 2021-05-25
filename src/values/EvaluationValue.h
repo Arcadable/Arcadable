@@ -1,7 +1,8 @@
 #pragma once
 #define EvaluationValue_h
-#include <values/Value.h>
+#include "Value.h"
 #include <vector>
+class GameState;
 
 enum EvaluationOperator {
   add,
@@ -25,6 +26,7 @@ enum EvaluationOperator {
 
 class EvaluationValue: public Value {
 	public:
+    GameState *game;
     Value* left;
     Value* right;
     EvaluationOperator evaluationOperator;
@@ -41,7 +43,8 @@ class EvaluationValue: public Value {
     EvaluationValue(
         unsigned short ID,
         EvaluationOperator evaluationOperator,
-        bool isStatic
+        bool isStatic,
+        GameState *game
     );
   private:
     double _STATIC_RESULT;

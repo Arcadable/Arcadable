@@ -1,5 +1,4 @@
 #include "TextValue.h"
-#include "Arcadable.h"
 
 TextValue::TextValue(
     unsigned short ID,

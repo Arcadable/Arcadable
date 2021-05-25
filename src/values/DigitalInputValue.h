@@ -1,9 +1,11 @@
 #pragma once
 #define DigitalInputValue_h
-#include <values/Value.h>
+#include "Value.h"
 #include <vector>
+#include "../digitalReader.h"
 class DigitalInputValue: public Value {
 	public:
+        DigitalReader *reader;
         unsigned short index;
 
         double getNumber();
@@ -15,6 +17,7 @@ class DigitalInputValue: public Value {
         DigitalInputValue();
         DigitalInputValue(
             unsigned short ID,
-            unsigned short index
+            unsigned short index,
+            DigitalReader *reader
         );
 };

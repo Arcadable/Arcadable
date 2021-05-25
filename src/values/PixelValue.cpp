@@ -1,31 +1,31 @@
 #include "PixelValue.h"
-#include "Arcadable.h"
-
+#include "../gameState.h"
 PixelValue::PixelValue(
-    unsigned short ID
+    unsigned short ID,
+    GameState *game,
+    DisplayRunner *display
 ) : Value(ID, ValueType::pixelIndex) {
     this->isNumberType = true;
+    this->game = game;
+    this->display = display;
 }
 PixelValue::PixelValue() {}
 
 void PixelValue::init(std::vector<unsigned short> ids) {
-    this->XCalc = Arcadable::getInstance()->values.find(ids[0])->second;
-    this->YCalc = Arcadable::getInstance()->values.find(ids[1])->second;
+    this->XCalc = this->game->values.find(ids[0])->second;
+    this->YCalc = this->game->values.find(ids[1])->second;
 }
 double PixelValue::getNumber() {
-    int pixelIndex =
-        static_cast<int>(this->YCalc->getNumber()) *
-        Arcadable::getInstance()->systemConfig->screenWidth +
-        static_cast<int>(this->XCalc->getNumber());
-    return (Arcadable::getInstance()->pixelsBuffer[pixelIndex].r << 16) + (Arcadable::getInstance()->pixelsBuffer[pixelIndex].g << 8) + Arcadable::getInstance()->pixelsBuffer[pixelIndex].b;
+    int pixelIndex = static_cast<int>(this->YCalc->getNumber()) * SCREEN_WIDTH + static_cast<int>(this->XCalc->getNumber());
+    return (this->display->renderLeds[pixelIndex].r << 16) + (this->display->renderLeds[pixelIndex].g << 8) + this->display->renderLeds[pixelIndex].b;
 }
 void PixelValue::setNumber(double newValue) {
     int pixelIndex =
         static_cast<int>(this->YCalc->getNumber()) *
-        Arcadable::getInstance()->systemConfig->screenWidth +
+        SCREEN_WIDTH +
         static_cast<int>(this->XCalc->getNumber());
-    if (pixelIndex > 0 && pixelIndex < Arcadable::getInstance()->systemConfig->screenWidth * Arcadable::getInstance()->systemConfig->screenHeight) {
-        Arcadable::getInstance()->pixels[pixelIndex] = static_cast<int>(newValue);
+    if (pixelIndex > 0 && pixelIndex < SCREEN_WIDTH * SCREEN_HEIGHT) {
+        this->display->renderLeds[pixelIndex] = static_cast<int>(newValue);
     }
 }
 bool PixelValue::isTruthy() {

@@ -1,11 +1,18 @@
 #pragma once
 #define SystemConfigValue_h
-#include <SystemConfig.h>
-#include <values/Value.h>
+#include "Value.h"
 #include <vector>
+#include "../configuration.h"
+enum SystemConfigType {
+    screenWidth,
+    screenHeight,
+    currentMillis,
+    isZigZag
+};
 class SystemConfigValue: public Value {
 	public:
         SystemConfigType configType;
+        unsigned long startTime;
 
         double getNumber();
         void setNumber(double newValue);

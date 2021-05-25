@@ -1,1 +1,1 @@
-This library allows you to create your own local single/multi-player game console. Write the game data to an external ROM modules, then insert the ROM module, load the game data into the library and display the current game state on led strips. 
+This project allows you to create your own local single/multi-player game console. Write the game data to an external EEPROM as gamecard, then insert the gamecard, load the game data and display the current game state on led strips. 

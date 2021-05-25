@@ -12,12 +12,14 @@ date:      2016/04/27
 #include "Arduino.h"
 #include "Print.h"
 #include "gfxfont.h"
+#include <vector>
 
 #define adagfxswap(a, b) { a = a ^ b; b = a ^ b; a = a ^ b; }
 
-#if !defined(ESP8266)
+/*#if !defined(ESP8266)
   #define swap(a, b) adagfxswap(a, b)
-#endif
+#endif*/
+class DisplayRunner;
 
 class FastLED_GFX : public Print {
 public:
@@ -135,12 +137,13 @@ private:
 
 class GFXcanvas: public FastLED_GFX {
 public:
-  GFXcanvas(uint16_t w, uint16_t h);
+  GFXcanvas(uint16_t w, uint16_t h, DisplayRunner *d);
   ~GFXcanvas(void);
   void drawPixel(int16_t x, int16_t y, CRGB color);
   void fillScreen(CRGB color);
   struct CRGB *getBuffer(void);
   struct CRGB *m_LED;
+  DisplayRunner *display;
 };
 
 #endif // _FASTLED_GFX_H

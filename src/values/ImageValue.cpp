@@ -1,18 +1,19 @@
 #include "ImageValue.h"
-#include "Arcadable.h"
-
+#include "../gameState.h"
 ImageValue::ImageValue(
-    unsigned short ID
+    unsigned short ID,
+    GameState *game
 ) : Value(ID, ValueType::image) {
     this->isNumberType = false;
+    this->game = game;
 }
 ImageValue::ImageValue() {}
 
 void ImageValue::init(std::vector<unsigned short> ids) {
-    this->data = Arcadable::getInstance()->values.find(ids[0])->second;
-    this->width = Arcadable::getInstance()->values.find(ids[1])->second;
-    this->height = Arcadable::getInstance()->values.find(ids[2])->second;
-    this->keyColor = Arcadable::getInstance()->values.find(ids[3])->second;
+    this->data = this->game->values.find(ids[0])->second;
+    this->width = this->game->values.find(ids[1])->second;
+    this->height = this->game->values.find(ids[2])->second;
+    this->keyColor = this->game->values.find(ids[3])->second;
 }
 
 bool ImageValue::isTruthy() {

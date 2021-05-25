@@ -1,5 +1,4 @@
 #include "DataValue.h"
-#include "Arcadable.h"
 
 DataValue::DataValue (
     unsigned short ID,

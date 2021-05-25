@@ -1,6 +1,5 @@
 #include "ListDeclaration.h"
-#include "Arcadable.h"
-
+#include "../gameState.h"
 ListDeclaration::ListDeclaration (
     unsigned short ID,
     unsigned short size

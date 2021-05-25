@@ -1,6 +1,6 @@
 #pragma once
 #define NumberValue_h
-#include <values/Value.h>
+#include "Value.h"
 #include <vector>
 class NumberValue: public Value {
 	public:

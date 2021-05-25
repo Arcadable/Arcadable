@@ -1,9 +1,11 @@
 #pragma once
 #define AnalogInputValue_h
-#include <values/Value.h>
+#include "Value.h"
 #include <vector>
+#include "../analogReader.h"
 class AnalogInputValue: public Value {
 	public:
+        AnalogReader *reader;
         unsigned short index;
 
         double getNumber();
@@ -16,6 +18,7 @@ class AnalogInputValue: public Value {
         AnalogInputValue();
         AnalogInputValue(
             unsigned short ID,
-            unsigned short index
+            unsigned short index,
+            AnalogReader *reader
         );
 };

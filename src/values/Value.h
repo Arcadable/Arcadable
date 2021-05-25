@@ -2,7 +2,6 @@
 #define Value_h
 class ValuePointer;
 #include <vector>
-#include <values/Value.h>
 enum ValueType {
 
     number,
@@ -15,7 +14,8 @@ enum ValueType {
     text,
     evaluation,
     image,
-	data
+	data,
+    speakerOutputPointer
 };
 
 

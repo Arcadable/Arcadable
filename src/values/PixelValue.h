@@ -1,10 +1,14 @@
 #pragma once
 #define PixelValue_h
-#include <values/Value.h>
+#include "Value.h"
 #include <vector>
+#include "../displayRunner.h"
+class GameState;
 
 class PixelValue: public Value {
 	public:
+        DisplayRunner *display;
+        GameState *game;
         Value* XCalc;
         Value* YCalc;
 
@@ -16,6 +20,8 @@ class PixelValue: public Value {
         void init(std::vector<unsigned short> ids);
         PixelValue();
         PixelValue(
-            unsigned short ID
+            unsigned short ID,
+            GameState *game,
+            DisplayRunner *display
         );
 };

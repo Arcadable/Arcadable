@@ -1,7 +1,7 @@
 #pragma once
 #define DataValue_h
 #include <vector>
-#include <values/Value.h>
+#include "Value.h"
 
 class DataValue: public Value {
 	public:

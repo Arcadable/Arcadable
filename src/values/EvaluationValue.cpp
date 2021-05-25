@@ -1,23 +1,25 @@
 #include "EvaluationValue.h"
 #include <cmath>
-#include <Arcadable.h>
+#include "../gameState.h"
 EvaluationValue::EvaluationValue(
     unsigned short ID,
     EvaluationOperator evaluationOperator,
-    bool isStatic
+    bool isStatic,
+    GameState *game
 ) : Value(ID, ValueType::evaluation) {
     this->evaluationOperator = evaluationOperator;
     this->isStatic = isStatic;
     this->_STATIC_RESULT = (double)(-999999999);
     this->isNumberType = true;
+    this->game = game;
 }
 EvaluationValue::EvaluationValue() {
     this->_STATIC_RESULT = (double)(-999999999);
     this->isNumberType = true;
 }
 void EvaluationValue::init(std::vector<unsigned short> ids) {
-    this->left = Arcadable::getInstance()->values.find(ids[0])->second;
-    this->right = Arcadable::getInstance()->values.find(ids[1])->second;
+    this->left = this->game->values.find(ids[0])->second;
+    this->right = this->game->values.find(ids[1])->second;
 };
 
 double EvaluationValue::getNumber() {

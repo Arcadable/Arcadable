@@ -1,16 +1,22 @@
 #pragma once
 #define ClearInstruction_h
-#include <instructions/Instruction.h>
+#include "Instruction.h"
 #include <vector>
+#include "../displayRunner.h"
 
 class ClearInstruction: public Instruction {
 	public:
 
-        void execute();
+        DisplayRunner *display;
+
         ClearInstruction();
         ClearInstruction(
-            unsigned short ID
+            unsigned short ID,
+            bool await,
+            DisplayRunner *display
         );
         void init(std::vector<unsigned short> ids);
+        std::vector<unsigned int>* action(bool async);
+        double getWaitAmount();
 
 };

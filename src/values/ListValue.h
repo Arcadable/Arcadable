@@ -1,12 +1,14 @@
 #pragma once
 #define ListValue_h
-#include <values/Value.h>
+#include "Value.h"
 #include <vector>
-#include <values/ListDeclaration.h>
+#include "ListDeclaration.h"
+class GameState;
 
 
 class ListValue: public Value {
 	public:
+        GameState *game;
         ListDeclaration* listValue;
         Value* listIndex;
 
@@ -18,6 +20,7 @@ class ListValue: public Value {
 		bool isTruthy();
         ListValue();
         ListValue(
-            unsigned short ID
+            unsigned short ID,
+            GameState *game
         );
 };
