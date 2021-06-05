@@ -5,11 +5,9 @@
 ToneInstruction::ToneInstruction (
     unsigned short ID,
     bool await,
-    GameState *game,
-    SoundController *soundController
+    GameState *game
 ) : Instruction(ID, InstructionType::Tone, await) {
     this->game = game;
-    this->soundController = soundController;
 }
 ToneInstruction::ToneInstruction() {}
 
@@ -37,7 +35,7 @@ std::vector<unsigned int>* ToneInstruction::action(bool async) {
         frequency = 1;
     }
   
-    this->soundController->playTone(frequency, volume, speakerPin, duration);
+    SoundController::playTone(frequency, volume, speakerPin, duration);
 
     return &Executable::empty;
 }

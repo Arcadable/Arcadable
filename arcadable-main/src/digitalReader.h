@@ -2,7 +2,7 @@
 #define _ARC_DIGITAL_READER
 #include <map>
 #include <Arduino.h>
-#include "configuration.h"
+#include "../configuration.h"
 
 class DigitalReader {
   public: 

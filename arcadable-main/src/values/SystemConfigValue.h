@@ -2,7 +2,7 @@
 #define SystemConfigValue_h
 #include "Value.h"
 #include <vector>
-#include "../configuration.h"
+#include "../../configuration.h"
 enum SystemConfigType {
     screenWidth,
     screenHeight,

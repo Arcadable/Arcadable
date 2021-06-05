@@ -2,7 +2,7 @@
 #define _ARC_ANALOG_READER
 #include <map>
 #include <Arduino.h>
-#include "configuration.h"
+#include "../configuration.h"
 #include "TeensyTimerTool.h"
 using namespace TeensyTimerTool;
 

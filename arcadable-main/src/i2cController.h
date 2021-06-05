@@ -2,43 +2,40 @@
 #define _ARC_I2C
 
 #include <Arduino.h>
-#include "configuration.h"
+#include "../configuration.h"
 #include <i2c_device.h>
 #include "imx_rt1060/imx_rt1060_i2c_driver.h"
 
 class I2cController {
   public: 
 
-    I2CMaster& master = Master;
+    static I2CMaster& master;
 
-    unsigned long noError = 0;
-    unsigned long error0 = 0;
-    unsigned long error1 = 0;
-    unsigned long error2 = 0;
-    unsigned long error3 = 0;
-    unsigned long error4 = 0;
-    unsigned long error5 = 0;
-    unsigned long error6 = 0;
-    unsigned long error7 = 0;
-    unsigned long error8 = 0;
-    unsigned long error9 = 0;
-    unsigned long error10 = 0;
-    unsigned long error11 = 0;
-    unsigned long error12 = 0;
-
-    uint8_t stuck_bus_pin = 12;
+    static unsigned long noError;
+    static unsigned long error0;
+    static unsigned long error1;
+    static unsigned long error2;
+    static unsigned long error3;
+    static unsigned long error4;
+    static unsigned long error5;
+    static unsigned long error6;
+    static unsigned long error7;
+    static unsigned long error8;
+    static unsigned long error9;
+    static unsigned long error10;
+    static unsigned long error11;
+    static unsigned long error12;
 
     I2cController() {
 
     }
-    void init() {
+    static void init() {
       master.begin(100'000);
-      pinMode(stuck_bus_pin, OUTPUT);
-      digitalWrite(stuck_bus_pin, false);
+      pinMode(STUCK_BUS_PIN_MAIN_CONTROLLER, OUTPUT);
+      digitalWrite(STUCK_BUS_PIN_MAIN_CONTROLLER, false);
     }
 
-    bool isAvailable(unsigned char hardwareAddress) {
-      
+    static bool isAvailable(unsigned char hardwareAddress) {
       uint8_t buffer[] = {};
       master.write_async(hardwareAddress, buffer, 0, true);
       finish();
@@ -57,13 +54,13 @@ class I2cController {
     
 
 
-    bool write(unsigned char hardwareAddress, unsigned int dataLength, unsigned char *data) {
+    static bool write(unsigned char hardwareAddress, unsigned int dataLength, unsigned char *data) {
       master.write_async(hardwareAddress, data, dataLength, true);
       finish();
       return true;
     }
 
-    void finish() {
+    static void finish() {
       elapsedMillis timeout;
       bool finished = false;
       while (timeout < 200) {
@@ -127,15 +124,15 @@ class I2cController {
           }
           case 12: {
             error12++;
-            digitalWriteFast(stuck_bus_pin, true);
+            digitalWriteFast(STUCK_BUS_PIN_MAIN_CONTROLLER, true);
             break;
           }
         }
       } else {
         noError++;
-        digitalWriteFast(stuck_bus_pin, false);
+        digitalWriteFast(STUCK_BUS_PIN_MAIN_CONTROLLER, false);
       }
-      /*Serial.print("noError: "); Serial.println(noError);
+      Serial.print("noError: "); Serial.println(noError);
       Serial.print("error0: "); Serial.println(error0);
       Serial.print("error1: "); Serial.println(error1);
       Serial.print("error2: "); Serial.println(error2);
@@ -148,16 +145,18 @@ class I2cController {
       Serial.print("error9: "); Serial.println(error9);
       Serial.print("error10: "); Serial.println(error10);
       Serial.print("error11: "); Serial.println(error11);
-      Serial.print("error12: "); Serial.println(error12);*/
+      Serial.print("error12: "); Serial.println(error12);
     }
 
-    bool read(unsigned char hardwareAddress, unsigned int startAddress, unsigned int readLength, unsigned char *dataReceiver) {
-     // unsigned char data[246] = {0,4,11,0,0,1,0,22,8,0,6,0,0,1,0,2,0,8,26,0,1,0,7,0,10,28,0,1,0,9,0,73,0,0,1,0,0,0,0,0,2,61,204,204,205,0,3,63,128,0,0,0,4,189,204,204,205,0,5,61,204,204,205,0,7,65,160,0,0,0,9,0,0,0,0,0,11,68,250,0,0,0,12,65,112,0,0,0,13,66,200,0,0,0,14,68,122,0,0,0,15,68,187,128,0,0,3,139,0,6,0,11,134,0,7,0,11,0,1,0,12,0,12,0,19,128,0,1,0,2,0,4,0,2,0,2,0,5,0,3,0,1,0,6,0,17,129,0,4,0,8,255,255,0,1,0,5,0,10,255,255,0,2,0,5,141,0,0,0,5,0,5,147,0,10,0,5,0,5,145,0,9,0,15,0,11,146,0,8,0,0,0,3,0,13,0,14,0,47,143,0,0,0,1,0,0,0,3,0,3,0,3,0,4,0,5,0,4,0,2,0,6,0,7,0,1,0,1,0,1,0,2,0,1,0,2,0,5,128,3,0,8,0,9,0,10};
+    static bool read(unsigned char hardwareAddress, unsigned int startAddress, unsigned int readLength, unsigned char *dataReceiver) {
+ 
       unsigned char startAddressData[2] = {static_cast<unsigned char>(startAddress >> 8), static_cast<unsigned char>(startAddress & 0xFF)};
-      this->write(hardwareAddress, 2, startAddressData);
+      write(hardwareAddress, 2, startAddressData);
       master.read_async(hardwareAddress, dataReceiver, readLength, true);
       finish();
-     /* std::copy(data + startAddress,
+
+     /* unsigned char data[300] = {0,4,11,0,0,1,0,36,8,0,7,0,0,5,0,6,0,10,0,0,1,0,2,0,12,26,0,1,0,11,0,14,28,0,1,0,13,0,15,26,0,4,0,7,0,85,0,0,1,0,0,0,0,0,2,61,204,204,205,0,3,63,128,0,0,0,5,0,0,0,0,0,6,64,0,0,0,0,8,189,204,204,205,0,9,61,204,204,205,0,11,65,160,0,0,0,13,0,0,0,0,0,16,68,250,0,0,0,17,65,112,0,0,0,18,66,200,0,0,0,19,68,122,0,0,0,20,68,187,128,0,0,4,4,0,4,2,0,3,139,0,8,0,11,134,0,9,0,16,0,1,0,17,0,17,0,25,128,0,1,0,2,0,8,0,2,0,2,0,9,0,3,0,5,0,4,0,4,0,1,0,10,0,25,129,0,5,0,12,255,255,0,1,0,6,0,14,255,255,0,2,0,7,0,15,255,255,0,3,0,5,141,0,0,0,6,0,5,147,0,12,0,6,0,5,145,0,11,0,20,0,11,146,0,10,0,0,0,3,0,18,0,19,0,55,143,0,0,0,1,0,0,0,4,0,1,0,7,0,5,0,2,0,8,0,9,0,1,0,1,0,1,0,2,0,1,0,2,0,3,0,4,0,3,0,4,0,5,0,6,0,6,128,3,0,10,0,11,0,12};
+      std::copy(data + startAddress,
                 data + startAddress + readLength,
                 dataReceiver + 0);*/
 

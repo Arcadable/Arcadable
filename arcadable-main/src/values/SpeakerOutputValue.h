@@ -6,7 +6,6 @@
 class GameState;
 class SpeakerOutputValue: public Value {
 	public:
-        SoundController *soundController;
         unsigned short index;
 
         double getNumber();
@@ -19,7 +18,6 @@ class SpeakerOutputValue: public Value {
         SpeakerOutputValue();
         SpeakerOutputValue(
             unsigned short ID,
-            unsigned short index,
-            SoundController *soundController
+            unsigned short index
         );
 };

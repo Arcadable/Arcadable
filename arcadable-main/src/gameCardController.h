@@ -2,7 +2,7 @@
 #define _ARC_CARD_CONTROLLER
 
 #include <Arduino.h>
-#include "configuration.h"
+#include "../configuration.h"
 #include "TeensyTimerTool.h"
 using namespace TeensyTimerTool;
 #include "gameState.h"
@@ -14,19 +14,16 @@ class GameCardController {
  
     PeriodicTimer _pollTimer = PeriodicTimer(TCK);
     GameState *gameState;
-    I2cController *i2cController;
 	DisplayRunner *displayRunner;
 	MainRunner *mainRunner;
-	SoundController *soundController;
 	bool gameLoaded;
 	bool readyToLoad;
 
     GameCardController() {
 
     }
-    void init(GameState *gameState, I2cController *i2cController, DisplayRunner *displayRunner, MainRunner *mainRunner, SoundController *soundController) {
+    void init(GameState *gameState, DisplayRunner *displayRunner, MainRunner *mainRunner) {
       	this->gameState = gameState;
-      	this->i2cController = i2cController;
 		this->displayRunner = displayRunner;
 		this->mainRunner = mainRunner;
       	_pollTimer.begin([this]() {this->_pollTrigger(); }, GAMECARD_POLLING_INTERVAL * 1000);
@@ -38,9 +35,9 @@ class GameCardController {
 
   private: 
     void _pollTrigger() {
-		
-      	if(this->readyToLoad) {
-			if(this->i2cController->isAvailable(GAMECARD_EEPROM_ADDRESS)) {
+      	
+		if(this->readyToLoad) {
+			if(I2cController::isAvailable(GAMECARD_EEPROM_ADDRESS)) {
 				this->readyToLoad = false;
 				this->displayRunner->startLoading(0.01);
 				if(this->gameLoaded) {
@@ -48,7 +45,7 @@ class GameCardController {
 				}
 				elapsedMillis wait = 0;
 				while(wait < 500) {}
-				if(this->i2cController->isAvailable(GAMECARD_EEPROM_ADDRESS)) {
+				if(I2cController::isAvailable(GAMECARD_EEPROM_ADDRESS)) {
 					bool readRes = this->_readAndLoadGameLogic();
 					this->displayRunner->canvas.setRotation(0);
 					if (readRes) {
@@ -61,9 +58,10 @@ class GameCardController {
 					this->displayRunner->stopLoading();
 				}
 			}
-      	} else if(!this->i2cController->isAvailable(GAMECARD_EEPROM_ADDRESS)) {
+      	} else if(!I2cController::isAvailable(GAMECARD_EEPROM_ADDRESS)) {
 			this->readyToLoad = true;
 		}
+		
     }
 
 	void _unloadGameLogic() {
@@ -84,11 +82,14 @@ class GameCardController {
 			if(!continueReading) {
 				break;
 			}
+			if(p > 40) {
+				break;
+			}
 			p = p + 1.0;
 			this->displayRunner->startLoading(p / 34.0);
 			unsigned char lengthData[2];
 			unsigned short int length;
-			bool readRes = this->i2cController->read(GAMECARD_EEPROM_ADDRESS, currentParsePosition, 2, lengthData);
+			bool readRes = I2cController::read(GAMECARD_EEPROM_ADDRESS, currentParsePosition, 2, lengthData);
 			if(!readRes) {
 				return false;
 			}
@@ -96,7 +97,7 @@ class GameCardController {
 			currentParsePosition += 2;
 
 			unsigned char data[length];
-			readRes = this->i2cController->read(GAMECARD_EEPROM_ADDRESS, currentParsePosition, length, data);
+			readRes = I2cController::read(GAMECARD_EEPROM_ADDRESS, currentParsePosition, length, data);
 			if(!readRes) {
 				return false;
 			}
@@ -114,7 +115,6 @@ class GameCardController {
 			for (unsigned int i = 1 ; i < length ; i += 2) {
 				unsigned short id = static_cast<unsigned short>((data[i + 0] << 8) + data[i + 1]);
 				if(isInstructionType) {                
-	
 
 					switch(type) {
 						case InstructionType::MutateValue: {
@@ -349,7 +349,7 @@ class GameCardController {
 							unsigned short frequencyValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
 							unsigned short durationValueID = static_cast<unsigned short>((data[i + 8] << 8) + data[i + 9]);
 
-							this->gameState->toneInstructions[id] = ToneInstruction(id, false, this->gameState, this->soundController);
+							this->gameState->toneInstructions[id] = ToneInstruction(id, false, this->gameState);
 							this->gameState->instructions[id] = &this->gameState->toneInstructions[id];
 
 							instructionParamsMap[id] = {speakerOutputValueID, volumeValueID, frequencyValueID, durationValueID };
@@ -362,7 +362,7 @@ class GameCardController {
 							unsigned short frequencyValueID = static_cast<unsigned short>((data[i + 4] << 8) + data[i + 5]);
 							unsigned short durationValueID = static_cast<unsigned short>((data[i + 6] << 8) + data[i + 7]);
 
-							this->gameState->toneInstructions[id] = ToneInstruction(id, true, this->gameState, this->soundController);
+							this->gameState->toneInstructions[id] = ToneInstruction(id, true, this->gameState);
 							this->gameState->instructions[id] = &this->gameState->toneInstructions[id];
 
 							instructionParamsMap[id] = {speakerOutputValueID, volumeValueID, frequencyValueID, durationValueID };
@@ -370,7 +370,6 @@ class GameCardController {
 							break;
 						}
 						case InstructionType::InstructionSetType: {
-							this->displayRunner->startLoading(1.0);
 							unsigned short size = static_cast<unsigned short>(((data[i + 2] & 0b01111111) << 8) + data[i + 3]);
 							bool async = static_cast<bool>((data[i + 2] >> 7) & 0b1);
 							instructionSetParamsMap[id] = std::vector<unsigned short>(size);
@@ -380,6 +379,8 @@ class GameCardController {
 							}
 							this->gameState->instructionSets[id] = InstructionSet(id, size, async, this->gameState);
 							if (!setupSet) {
+								this->displayRunner->startLoading(1.0);
+
 								this->gameState->setupInstructionSet = &this->gameState->instructionSets[id];
 								setupSet = true;
 							} else if (!mainSet) {
@@ -465,7 +466,7 @@ class GameCardController {
 						case ValueType::speakerOutputPointer: {
 							unsigned short index = static_cast<unsigned short>(data[i + 2]);
 							
-							this->gameState->speakerOutputValues[id] = SpeakerOutputValue(id, index, this->soundController);
+							this->gameState->speakerOutputValues[id] = SpeakerOutputValue(id, index);
 							this->gameState->values[id] = &this->gameState->speakerOutputValues[id];
 							i += 1;
 							break;

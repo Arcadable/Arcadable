@@ -9,7 +9,6 @@ class GameState;
 class ToneInstruction: public Instruction {
 	public:
         GameState *game;
-        SoundController *soundController;
         Value* speakerOutputValue;
         Value* volumeValue;
         Value* frequencyValue;
@@ -19,8 +18,7 @@ class ToneInstruction: public Instruction {
         ToneInstruction(
             unsigned short ID,
             bool await,
-            GameState *game,
-            SoundController *soundController
+            GameState *game
         );
         void init(std::vector<unsigned short> ids);
         std::vector<unsigned int>* action(bool async);

@@ -2,7 +2,8 @@
 #include "gameState.h"
 
 FASTRUN void MainRunner::_mainTrigger() {
-    Serial.println(this->mainDelta);
+    //Serial.println(this->mainDelta);
+    delay(1);
     this->mainDelta = 0;
     this->digitalReader.updateValues();
     this->analogReader.updateValues();
@@ -14,6 +15,6 @@ FASTRUN void MainRunner::_mainTrigger() {
             this->first = false;
         }
         this->_processCallStack(&this->callStack);
-        this->soundController->sendSounds();
     }
+    SoundController::sendSounds();
 }

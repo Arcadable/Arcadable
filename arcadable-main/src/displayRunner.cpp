@@ -32,7 +32,7 @@ FASTRUN void DisplayRunner::_render() {
         this->canvas.fillScreen(CRGB::Black);
         unsigned char width = static_cast<unsigned char>(static_cast<double>(SCREEN_WIDTH) * this->loadingProgress);
         unsigned char height = static_cast<unsigned char>(static_cast<double>(SCREEN_HEIGHT) * this->loadingProgress);
-        this->canvas.drawRect(0, 0, width, height, CRGB::White);
+        this->canvas.drawRect((SCREEN_WIDTH / 2) - (width / 2), (SCREEN_HEIGHT / 2) - (height / 2), width, height, CRGB::White);
 
     }
 }

@@ -2,7 +2,7 @@
 #define _ARC_DISPLAY
 
 #include <Arduino.h>
-#include "configuration.h"
+#include "../configuration.h"
 #include "TeensyTimerTool.h"
 using namespace TeensyTimerTool;
 
@@ -53,6 +53,7 @@ class DisplayRunner : Runner {
     void startLoading(double progress) {
       this->gameLoading = true;
       this->loadingProgress = progress;
+      Serial.println(this->loadingProgress);
       this->force();
     }
     void stopLoading() {

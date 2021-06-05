@@ -43,7 +43,13 @@
         "iostream": "cpp",
         "cinttypes": "cpp",
         "any": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "chrono": "cpp",
+        "ctime": "cpp",
+        "list": "cpp",
+        "functional": "cpp",
+        "ratio": "cpp",
+        "numeric": "cpp"
     },
     "C_Cpp.loggingLevel": "Debug",
     "C_Cpp.errorSquiggles": "Enabled"

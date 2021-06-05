@@ -21,11 +21,14 @@
 
 // Speaker output
 #define SPEAKER_OUTPUT_PINS_AMOUNT 4
-#define SPEAKER_OUTPUT_PINS (int[]){7,4,3,5}
-#define GENERAL_VOLUME 0.02
+#define SPEAKER_OUTPUT_PINS (int[]){0,1,2,3}
+
+//I2C
+#define STUCK_BUS_PIN_MAIN_CONTROLLER 12
+#define SOUND_CONTROLLER_ADDRESS (unsigned char)0b1010001
 
 // Inputs 
-#define LOG_INPUTS true
+#define LOG_INPUTS false
 #define REG_CLOCK_INHIBIT_PIN 4
 #define REG_SHIFT_LOAD_PIN 6
 #define REG_SERIAL_OUTPUT_PIN 7
@@ -41,8 +44,5 @@
 #define GAMECARD_POLLING_INTERVAL (unsigned short int)1000
 #define GAMECARD_EEPROM_ADDRESS (unsigned char)0b1010000
 #define GAMECARD_READ_WRITE_BUFFER_SIZE (unsigned char)32
-
-// Sound communication
-#define SOUND_CONTROLLER_ADDRESS (unsigned char)0b1010001
 
 #endif

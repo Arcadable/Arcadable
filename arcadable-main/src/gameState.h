@@ -1,7 +1,7 @@
 #ifndef ARC_GAMESTATE
 #define ARC_GAMESTATE
 #include <Arduino.h>
-#include "configuration.h"
+#include "../configuration.h"
 
 #include <map>
 

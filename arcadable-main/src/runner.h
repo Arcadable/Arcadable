@@ -2,7 +2,7 @@
 #define _ARC_RUNNER
 
 #include <Arduino.h>
-#include "configuration.h"
+#include "../configuration.h"
 #include "callStack.h"
 
 class Runner {

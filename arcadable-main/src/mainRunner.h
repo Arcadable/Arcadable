@@ -2,7 +2,7 @@
 #define _ARC_MAIN_RUNNER
 
 #include <Arduino.h>
-#include "configuration.h"
+#include "../configuration.h"
 #include "TeensyTimerTool.h"
 using namespace TeensyTimerTool;
 
@@ -17,7 +17,6 @@ class MainRunner : Runner {
  
     DigitalReader digitalReader;
     AnalogReader analogReader;
-    SoundController *soundController;
     PeriodicTimer _mainTimer = PeriodicTimer(TCK);
     bool gameLoaded;
     bool first;
@@ -26,11 +25,10 @@ class MainRunner : Runner {
     MainRunner() {
 
     }
-    void init(GameState *gameState, SoundController *soundController) {
+    void init(GameState *gameState) {
       Runner::init(gameState);
       this->digitalReader.init();
       this->analogReader.init();
-      this->soundController = soundController;
       this->_mainTimer.begin([this]() {this->_mainTrigger(); }, 1);
     }
 
