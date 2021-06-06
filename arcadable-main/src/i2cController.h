@@ -46,9 +46,11 @@ class I2cController {
       } else if (status == I2CError::address_nak) {
           return false;
       } else {
+        if(I2C_DEBUG) {
           Serial.print("Unexpected error at address ");
           Serial.println(hardwareAddress);
-          return false;
+        }
+        return false;
       }
     }
     
@@ -70,7 +72,10 @@ class I2cController {
           }
       }
       if(!finished) {
-        Serial.println("Master: ERROR timed out waiting for transfer to finish.");
+        if(I2C_DEBUG) {
+          Serial.println("Master: ERROR timed out waiting for transfer to finish.");
+        }
+        digitalWriteFast(STUCK_BUS_PIN_MAIN_CONTROLLER, true);
       }
       if (master.has_error()) {
         switch((unsigned int)master.error()) {
@@ -132,20 +137,23 @@ class I2cController {
         noError++;
         digitalWriteFast(STUCK_BUS_PIN_MAIN_CONTROLLER, false);
       }
-      Serial.print("noError: "); Serial.println(noError);
-      Serial.print("error0: "); Serial.println(error0);
-      Serial.print("error1: "); Serial.println(error1);
-      Serial.print("error2: "); Serial.println(error2);
-      Serial.print("error3: "); Serial.println(error3);
-      Serial.print("error4: "); Serial.println(error4);
-      Serial.print("error5: "); Serial.println(error5);
-      Serial.print("error6: "); Serial.println(error6);
-      Serial.print("error7: "); Serial.println(error7);
-      Serial.print("error8: "); Serial.println(error8);
-      Serial.print("error9: "); Serial.println(error9);
-      Serial.print("error10: "); Serial.println(error10);
-      Serial.print("error11: "); Serial.println(error11);
-      Serial.print("error12: "); Serial.println(error12);
+      if(I2C_DEBUG) {
+        Serial.print("noError: "); Serial.println(noError);
+        Serial.print("error0: "); Serial.println(error0);
+        Serial.print("error1: "); Serial.println(error1);
+        Serial.print("error2: "); Serial.println(error2);
+        Serial.print("error3: "); Serial.println(error3);
+        Serial.print("error4: "); Serial.println(error4);
+        Serial.print("error5: "); Serial.println(error5);
+        Serial.print("error6: "); Serial.println(error6);
+        Serial.print("error7: "); Serial.println(error7);
+        Serial.print("error8: "); Serial.println(error8);
+        Serial.print("error9: "); Serial.println(error9);
+        Serial.print("error10: "); Serial.println(error10);
+        Serial.print("error11: "); Serial.println(error11);
+        Serial.print("error12: "); Serial.println(error12);
+      }
+
     }
 
     static bool read(unsigned char hardwareAddress, unsigned int startAddress, unsigned int readLength, unsigned char *dataReceiver) {

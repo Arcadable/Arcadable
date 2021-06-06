@@ -36,7 +36,10 @@ class DigitalReader {
         digitalWriteFast(REG_CLOCK_INPUT_PIN, HIGH);
         digitalWriteFast(REG_CLOCK_INPUT_PIN, LOW);
         if(LOG_INPUTS) {
-          Serial.print(digitalInputValues[i]); Serial.print(", "); 
+          if(i < 10) {
+            Serial.print("0"); 
+          }
+          Serial.print(i); Serial.print(": "); Serial.print(digitalInputValues[i]); Serial.print(", "); 
           if(i % 4 == 3) {
             Serial.println();
           }

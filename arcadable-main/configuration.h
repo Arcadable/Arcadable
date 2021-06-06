@@ -24,11 +24,12 @@
 #define SPEAKER_OUTPUT_PINS (int[]){0,1,2,3}
 
 //I2C
+#define I2C_DEBUG false
 #define STUCK_BUS_PIN_MAIN_CONTROLLER 12
 #define SOUND_CONTROLLER_ADDRESS (unsigned char)0b1010001
 
 // Inputs 
-#define LOG_INPUTS false
+#define LOG_INPUTS true
 #define REG_CLOCK_INHIBIT_PIN 4
 #define REG_SHIFT_LOAD_PIN 6
 #define REG_SERIAL_OUTPUT_PIN 7

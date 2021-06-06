@@ -39,6 +39,7 @@ class DisplayRunner : Runner {
     bool gameLoaded;
     bool gameLoading;
     double loadingProgress = 0;
+    elapsedMillis timeSinceProgress = 0;
 
     DisplayRunner(): canvas(SCREEN_WIDTH, SCREEN_HEIGHT, this) { }
     
@@ -53,7 +54,7 @@ class DisplayRunner : Runner {
     void startLoading(double progress) {
       this->gameLoading = true;
       this->loadingProgress = progress;
-      Serial.println(this->loadingProgress);
+      this->timeSinceProgress = 0;
       this->force();
     }
     void stopLoading() {

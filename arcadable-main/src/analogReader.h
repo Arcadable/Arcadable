@@ -36,6 +36,10 @@ class AnalogReader {
         analogInputValues[i] = readValue;
 
         if(LOG_INPUTS) {
+          if(i < 10) {
+            Serial.print("0"); 
+          }
+          Serial.print(i); Serial.print(": "); 
           if(analogInputValues[i] < 1000) {
             Serial.print("0"); 
           }

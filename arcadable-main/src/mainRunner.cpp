@@ -2,8 +2,6 @@
 #include "gameState.h"
 
 FASTRUN void MainRunner::_mainTrigger() {
-    //Serial.println(this->mainDelta);
-    delay(1);
     this->mainDelta = 0;
     this->digitalReader.updateValues();
     this->analogReader.updateValues();

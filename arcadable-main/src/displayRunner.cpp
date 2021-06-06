@@ -29,10 +29,13 @@ FASTRUN void DisplayRunner::_render() {
         this->canvas.setCursor(SCREEN_WIDTH / 2 - 12, SCREEN_HEIGHT / 2 + 2);
         this->canvas.print("Card");
     } else {
-        this->canvas.fillScreen(CRGB::Black);
-        unsigned char width = static_cast<unsigned char>(static_cast<double>(SCREEN_WIDTH) * this->loadingProgress);
-        unsigned char height = static_cast<unsigned char>(static_cast<double>(SCREEN_HEIGHT) * this->loadingProgress);
-        this->canvas.drawRect((SCREEN_WIDTH / 2) - (width / 2), (SCREEN_HEIGHT / 2) - (height / 2), width, height, CRGB::White);
-
+        if(this->timeSinceProgress > 2000) {
+            this->gameLoading = false;
+        } else {
+            this->canvas.fillScreen(CRGB::Black);
+            unsigned char width = static_cast<unsigned char>(static_cast<double>(SCREEN_WIDTH) * this->loadingProgress);
+            unsigned char height = static_cast<unsigned char>(static_cast<double>(SCREEN_HEIGHT) * this->loadingProgress);
+            this->canvas.drawRect((SCREEN_WIDTH / 2) - (width / 2), (SCREEN_HEIGHT / 2) - (height / 2), width, height, CRGB::White);
+        }
     }
 }

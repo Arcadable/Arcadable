@@ -35,7 +35,6 @@ class GameCardController {
 
   private: 
     void _pollTrigger() {
-      	
 		if(this->readyToLoad) {
 			if(I2cController::isAvailable(GAMECARD_EEPROM_ADDRESS)) {
 				this->readyToLoad = false;
